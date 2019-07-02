@@ -55,6 +55,26 @@ yangbailao3 =>叹词 ， 代词 状语 谓语
 """
 choice = random.choice
 
+
+def generate_best(m,grammar_str,target,filename):
+    """
+    生成多个句子，
+    :return:返回生成的句子
+    """
+    bigram = BiGram(filename)
+    grammar = create_grammar(grammar_str)
+    sens = []
+    maxPro = 0.0
+    maxSen = ''
+    for sen in [generate(gram=grammar, target=target) for i in range(m)]:
+        prob = bigram.get_probablity(sen)
+        print('sentence:{} with Prb: {}'.format(sen, prob))
+        if maxPro <= prob:
+            maxPro = prob
+            maxSen = sen
+    print('max sentence if :{} with Prb: {}'.format(maxSen, maxPro))
+    return maxSen,maxPro
+
 def create_grammar(grammar_str, split='=>', line_split='\n'):
     """
     生成语法树
@@ -89,6 +109,9 @@ def generate(gram, target):
     return ''.join([e if e != '/n' else '\n' for e in expaned if e != 'null'])
 
 
+
+
+
 def generate_n(gramstargets):
     """
     生成多个句子，这里生成杨白劳和喜儿的对话
@@ -102,9 +125,6 @@ def generate_n(gramstargets):
     return sens
 
 
-
-def tokenize(string):
-        return re.findall('\w+', string)
 
 
 
@@ -150,8 +170,9 @@ class BiGram(object):
 
 if __name__ == '__main__':
     filename = '/Users/henry/Documents/application/nlp_assignments/data/movie_comments.csv'
-    bigram = BiGram(filename)
-
+    generate_best(100, yangbailao, 'yangbailao', filename)
+    #bigram = BiGram(filename)
+    '''
     xier_gram = create_grammar(xier)
     yangbailao_gram = create_grammar(yangbailao)
     dialogue = [[yangbailao_gram,'yangbailao'],[xier_gram,'xier'],
@@ -160,6 +181,6 @@ if __name__ == '__main__':
      [xier_gram,'xier2'],[xier_gram,'xier2'],
      [xier_gram, 'xier2'],[yangbailao_gram,'yangbailao3']]
     generate_n(dialogue)
-
+    '''
 
 

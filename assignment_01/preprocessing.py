@@ -49,9 +49,14 @@ def tokenizeFormCsv( input_file, columns):
     TOKEN = []
     with tf.gfile.Open(input_file, "r") as f:
         reader = csv.DictReader(f)
+        i = 0
         for row in reader:
+            i += 1
+            if(i > 10000): break;
+            print(i,' : ',row[columns[0]])
             for column in columns:
                 TOKEN += cut(row[column])
+
                 '''
                 sens = strQ2B(row[column])
                 TOKEN.append(BEGIN)

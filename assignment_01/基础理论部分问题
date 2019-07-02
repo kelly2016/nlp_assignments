@@ -1,29 +1,39 @@
 0. Can you come up out 3 sceneraies which use AI methods?
-Ans: 1。
+Ans: 1. Image recognition
+     2. Face recognition
+     3. Artificial Intelligence Customer Service
 
 1. How do we use Github; Why do we use Jupyter and Pycharm;
-Ans: {Put your answer here}
+Ans: we push our codes to Github to share them.
+     Jupyter Notebook is for demonstrative purposes
+     PyCharm is one of the most widely used IDEs for Python programming
+
 
 2. What's the Probability Model?
-Ans:
+Ans:A probability model is a mathematical representation of a random phenomenon
 
 3. Can you came up with some sceneraies at which we could use Probability Model?
-Ans:
+Ans:1。Spam filtering
+    2。Chinese spell checker
 
 4. Why do we use probability and what's the difficult points for programming based on parsing and pattern match?
-Ans:
+Ans: It is too Rich in syntax to match
 
 5. What's the Language Model;
-Ans:
+Ans:A statistical language model is a probability distribution over sequences of words.It's also a funtion that input is a sentence
+   output is a number which is Between 0 and 1.
 
 6. Can you came up with some sceneraies at which we could use Language Model?
-Ans:
+Ans:1。Spam filtering
+    2。Chinese spell checker
 
 7. What's the 1-gram language model;
-Ans:
+Ans:1-gram is unigram，P(w1,w2,⋯,wm)=P(w1)p(w2)....p(wm).every word is independent.
 
 8. What's the disadvantages and advantages of 1-gram language model;
-Ans:
+Ans: Disadvantages:Every word is independent,lost a lot of context information
+     Advantages:The numerator and denominator of the probability estimate do not show a 0, so this probability estimate is very well defined
+
 
 9. What't the 2-gram models;
-Ans:
+Ans: 2-gram is bigram ，P(w1,w2,⋯,wm)=P(w1)p(w2|w1)p(w3|w2)....p(wm|wm-1)

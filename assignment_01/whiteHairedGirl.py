@@ -27,6 +27,14 @@ from collections import Counter
 
 from assignment_01 import preprocessing
 
+news = """
+news => 主语 状语 谓语 宾语
+主语 => 人名 | 人名 与 主语
+人名 => 赵本山 | 秋瓷炫 | 向佐 | 柳岩 | 范冰冰 | 李晨
+状语 => 跪地 | 悲痛地 |状语
+谓语 => 被拍 | 被爆 |透露 | 完婚 |吸毒 |求婚 | 谓语 谓语 
+宾语 => null | 浪漫 |假分手
+"""
 xier = """
 xier => 称谓 ！ 
 xier2 =>称谓 ， 主语 谓语 宾语 | 主语 谓语 宾语 | 状语 谓语 |谓语 宾语 | 状语 谓语 补语
@@ -53,6 +61,8 @@ yangbailao3 =>叹词 ， 代词 状语 谓语
 状语 => 这就
  
 """
+
+
 choice = random.choice
 
 
@@ -72,7 +82,7 @@ def generate_best(m,grammar_str,target,filename):
         if maxPro <= prob:
             maxPro = prob
             maxSen = sen
-    print('max sentence if :{} with Prb: {}'.format(maxSen, maxPro))
+    print('max sentence :{} with Prb: {}'.format(maxSen, maxPro))
     return maxSen,maxPro
 
 def create_grammar(grammar_str, split='=>', line_split='\n'):
@@ -170,7 +180,7 @@ class BiGram(object):
 
 if __name__ == '__main__':
     filename = '/Users/henry/Documents/application/nlp_assignments/data/movie_comments.csv'
-    generate_best(100, yangbailao, 'yangbailao', filename)
+    generate_best(10, news, 'news', filename)
     #bigram = BiGram(filename)
     '''
     xier_gram = create_grammar(xier)

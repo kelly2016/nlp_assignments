@@ -51,9 +51,9 @@ def tokenizeFormCsv( input_file, columns):
         reader = csv.DictReader(f)
         i = 0
         for row in reader:
-            i += 1
-            if(i > 10000): break;
-            print(i,' : ',row[columns[0]])
+            #i += 1
+            #if(i > 10000): break;
+            #print(i,' : ',row[columns[0]])
             for column in columns:
                 TOKEN += cut(row[column])
 

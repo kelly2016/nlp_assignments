@@ -2,7 +2,7 @@
 # @Time    : 2019-07-02 14:44
 # @Author  : Kelly
 # @Email   : 289786098@qq.com
-# @File    : whiteHairedGirl.py
+# @File    : biGram.py
 # @Description:句子生成作业，选中了白毛女剧本，人物分别有3个：喜儿，杨白劳，黄世仁
 
 

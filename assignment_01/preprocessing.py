@@ -32,6 +32,7 @@ def read_csv( input_file, columns):
                 for sen in sens:
                     lines.append(BEGIN +sen +END)
 
+
     return lines
 
 def cut(string):
@@ -67,10 +68,12 @@ def tokenizeFormCsv( input_file, columns):
 
     return TOKEN
 
-
+p = r'\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|（|）|＊|＋|，|－|／|：|；|＜|＝|＞|＠|\［|\＼|\］|\＾|＿|｀|\～|｟|｠|\、|〃|》|「|」|『|』|【|】|〔|〕|〖|〗|〘|〙|〚|〛|〜|\〝|\〞|〟|〰|〾|〿|–—|\‘|\“|\„|\‟|\…|\‧|﹏|\.'
+import  re
 def strQ2B(ustring):
+    return re.sub(p, '', ustring)
 
-    """全角转半角"""
+    """全角转半角
     rsents = []
     rstring = ''
     #当前连续字符
@@ -114,6 +117,7 @@ def strQ2B(ustring):
         rsents.append(rstring)
         rstring = ''
     return rsents
+    """
 
 if __name__ == '__main__':
     tokenizeFormCsv('/Users/henry/Documents/application/nlp_assignments/data/movie_comments.csv', ['comment'] )

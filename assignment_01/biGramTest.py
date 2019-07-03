@@ -182,18 +182,17 @@ if __name__ == '__main__':
     filename = '/Users/henry/Documents/application/nlp_assignments/data/movie_comments.csv'
     generate_best(10, news, 'news', filename)
     '''
-    sentence:秋瓷炫与赵本山跪地吸毒假分手 with Prb: 3.81588405956384e-61
-    sentence:柳岩跪地被爆 with Prb: 2.3003008877880914e-32
-    sentence:向佐悲痛地吸毒浪漫 with Prb: 9.750956471101694e-45
-    sentence:向佐与秋瓷炫与向佐跪地求婚 with Prb: 3.541600077988147e-78
-    sentence:赵本山跪地被爆浪漫 with Prb: 3.105923821969912e-39
-    sentence:李晨悲痛地求婚假分手 with Prb: 1.445657000904625e-47
-    sentence:柳岩悲痛地被拍被爆假分手 with Prb: 4.794293267933601e-54
-    sentence:向佐与范冰冰与李晨与赵本山悲痛地被爆浪漫 with Prb: 5.313285612383584e-86
-    sentence:范冰冰与范冰冰与向佐跪地求婚假分手 with Prb: 6.1758284391476755e-80
-    sentence:赵本山跪地被爆假分手 with Prb: 3.269393496810434e-40
-    max sentence :柳岩跪地被爆 with Prb: 2.3003008877880914e-32
-
+    sentence:赵本山跪地透露浪漫 with Prb: 4.123325387743087e-58
+    sentence:柳岩悲痛地完婚 with Prb: 2.601321461591346e-49
+    sentence:秋瓷炫与赵本山与赵本山与赵本山与李晨悲痛地求婚完婚被拍被爆完婚 with Prb: 1.1195568680032818e-203
+    sentence:柳岩与范冰冰跪地被爆假分手 with Prb: 5.179695926072617e-82
+    sentence:范冰冰与赵本山跪地透露 with Prb: 5.401768821831015e-70
+    sentence:赵本山跪地被爆浪漫 with Prb: 7.097527306770885e-58
+    sentence:李晨与柳岩悲痛地被拍 with Prb: 4.301237288335587e-65
+    sentence:秋瓷炫与赵本山跪地求婚浪漫 with Prb: 1.1277460536732827e-84
+    sentence:范冰冰与秋瓷炫与李晨跪地求婚完婚透露假分手 with Prb: 7.193585500444851e-134
+    sentence:李晨跪地完婚浪漫 with Prb: 2.0134890956135e-53
+    max sentence :柳岩悲痛地完婚 with Prb: 2.601321461591346e-49
     '''
     #bigram = BiGram(filename)
 

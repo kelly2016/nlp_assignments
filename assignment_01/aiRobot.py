@@ -240,7 +240,7 @@ if __name__ == '__main__':
 
     #ruleCut('?*x?*x他们是?*y吗？father mather and me?y?x')
 
-    print('ans:',get_response(saying = '你觉得他们是?情侣吗？ ',rules = rule_responses))
+    print('ans:',get_response(saying = 'hello你觉得他们是?情侣吗？ ',rules = rule_responses))
 
     #print(pat_match_with_seg('?*P is very good and ?*X'.split(), "My dog is very good and my cat is very cute".split()))
     #print(segment_match('?*P is very good'.split(), "My dog and my cat is very good".split()))

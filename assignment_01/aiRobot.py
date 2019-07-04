@@ -5,6 +5,8 @@
 # @File    : aiRobot.py
 # @Description:基于规则的机器人对话系统，就是写一个正则解析器
 import random
+import jieba
+
 defined_patterns = {
     "I need ?X": ["Image you will get ?X soon", "Why do you need ?X ?"],
     "My ?X told me something": ["Talk about more about your ?X", "How do you think about your ?X ?"]
@@ -29,6 +31,32 @@ def isSame(saying,got_saying):
     return True
 
 
+def cut(string):
+    return list(jieba.cut(string))
+
+def ruleCut(string):
+    """
+    把模版?*aaa or ?asss单独分出来后再分词
+    :param string:
+    :return:
+    """
+    p = re.compile(r'\?\**[A-Za-z]+')
+    indexes = []
+    retStr = []
+    lastIndex = 0
+    for m in p.finditer(string):
+        start = m.start()
+        end = m.end()
+        if(lastIndex <  start):#如果前面有字符串
+            retStr += [token  for token in cut(string[lastIndex:start]) if token.strip() != '']
+        #print(string[start: end], '  : ', m.group())
+        retStr.append(string[start: end])
+        lastIndex = end
+
+    return  cut(string) if(retStr == []) else retStr
+
+
+
 def get_response(saying, rules = defined_patterns):
     """
     依据规则rules，给saying一个反馈
@@ -36,9 +64,9 @@ def get_response(saying, rules = defined_patterns):
     :param rules:
     :return:
     """
-    saying = saying.split()
+    saying = cut(saying)  #cutsaying.split()
     for key,value in rules.items():
-        pattern = key.split()
+        pattern = ruleCut(key)#key.split()cut
         got_patterns = pat_match_with_seg(pattern, saying)
         length  = len(got_patterns)
         if(length != 0):
@@ -47,13 +75,37 @@ def get_response(saying, rules = defined_patterns):
                 continue;
             else:
                 retString =  random.choice(value)
-                return ' '.join(subsitite(retString.split(), pat_to_dict(got_patterns)))
+                return ''.join(subsitite(ruleCut(retString), pat_to_dict(got_patterns)))##cutretString.split()
     return  saying
 
 
 def is_pattern_segment(pattern):
     return pattern.startswith('?*') and all(a.isalpha() for a in pattern[2:])
 from collections import defaultdict
+
+def is_chinese_alphabet(string):
+    for uchar in string:
+        if(is_chinese(uchar) or is_alphabet(uchar)):
+            continue
+        else:
+            return False
+    return True
+
+
+def is_chinese(uchar):
+    if  '\u4e00'  <=  uchar<='\u9fff':
+        return  True
+    else:
+        return  False
+
+
+# 判断一个unicode是否是英文字母
+
+def  is_alphabet(uchar):
+    if  ('\u0041'  <=  uchar<='\u005a')  or  ('\u0061'  <=  uchar<='\u007a'):
+        return  True
+    else:
+        return  False
 
 
 def is_variable(pat):
@@ -111,7 +163,8 @@ def pat_to_dict(patterns):
     :param patterns:
     :return:
     """
-    return {k: ' '.join(v) if isinstance(v, list) else v for k, v in patterns}
+    tmp=  {k: ' '.join(v) if isinstance(v, list) else v for k, v in patterns}
+    return tmp
 
 
 def subsitite(rule, parsed_rules):
@@ -125,7 +178,10 @@ def subsitite(rule, parsed_rules):
     tmp = parsed_rules.get(rule[0],rule[0])#dict.get(key, default=None) default -- 如果指定键的值不存在时，返回该默认值值。
     return [tmp] + subsitite(rule[1:], parsed_rules)
 
+import re
 if __name__ == '__main__':
+
+
     rule_responses = {
         '?*x hello ?*y': ['How do you do', 'Please state your problem'],
         '?*x I want ?*y': ['what would it mean if you got ?y', 'Why do you want ?y', 'Suppose you got ?y soon'],
@@ -181,12 +237,13 @@ if __name__ == '__main__':
         '?*x他们是?*y吗？': ['你觉得他们可能不是?y？'],
         '?*x': ['很有趣', '请继续', '我不太确定我很理解你说的, 能稍微详细解释一下吗?']
     }
-    #print(isSame([1,2],['1','2']))
 
-    print(get_response(saying = '你好 ',rules = rule_responses))
+    #ruleCut('?*x?*x他们是?*y吗？father mather and me?y?x')
 
-    print(pat_match_with_seg('?*P is very good and ?*X'.split(), "My dog is very good and my cat is very cute".split()))
-    print(segment_match('?*P is very good'.split(), "My dog and my cat is very good".split()))
+    print('ans:',get_response(saying = '你觉得他们是?情侣吗？ ',rules = rule_responses))
+
+    #print(pat_match_with_seg('?*P is very good and ?*X'.split(), "My dog is very good and my cat is very cute".split()))
+    #print(segment_match('?*P is very good'.split(), "My dog and my cat is very good".split()))
 
 
 

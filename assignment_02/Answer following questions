@@ -1,0 +1,24 @@
+1. Why do we need machine learning methods instead of creating a complicated formula?
+Ans:In fact,it is too difficult to find a formula to solve those problems
+
+2. Wha't's the disadvantages of the 1st Random Choosen methods in our course?
+Ans:It would need longer to find the optimal solution
+
+3. Is the 2nd method supervised direction better than 1st one? What's the disadvantages of the 2nd supversied directin method?
+Ans: Yes， the 2nd method  is better than 1st one。
+     The disadvantages：
+     1）If the function is complicated and has many  coefficients，it
+ would have a lot of the directions of changes 。
+     2）Every time ，the next direction is not sure, it  may be better or be worse
+
+4. Why do we use Derivative / Gredient to fit a target function?
+Ans:
+
+5. In the words 'Gredient Descent', what's the Gredient and what's the Descent?
+Ans:
+
+6. What's the advantages of the 3rd gradient descent method compared to the previous methods?
+Ans:
+
+7. Using the simple words to describe: What's the machine leanring.
+Ans:

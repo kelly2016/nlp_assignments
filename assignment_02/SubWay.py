@@ -9,9 +9,9 @@ import requests
 import re
 from collections import defaultdict
 from enum import Enum
-
 import networkx as nx
 import matplotlib.pyplot as plt
+from functools import cmp_to_key
 #源文件分割符
 SPLIT = ' '
 plt.rcParams['font.sans-serif'] = ['SimHei']
@@ -125,9 +125,7 @@ class BeijingSubway(object):
         :param sort:排序方式
         :return:
         """
-
         pathes = [[start]]
-
         visited = set()
         while pathes:
 
@@ -156,8 +154,10 @@ class BeijingSubway(object):
                     pathes = self.transfer_station_first(pathes)
                 elif sort == BeijingSubway.SORT.MTP:  # 最少换乘优先
                     pathes = self.minimum_transfer_first(pathes)
+                else:
+                    pathes = self.comprehensive_first(pathes)
             else:
-                pass
+                pathes = self.comprehensive_first(pathes)
         return pretty_print(pathes)
 
 
@@ -165,10 +165,7 @@ class BeijingSubway(object):
     def transfer_station_first(self,paths):#最少站点优先
         return sorted(paths,key=len)
 
-    def minimum_transfer_first(self,pathes):  # 最少换乘
-        if len(pathes) < 1: return pathes
-
-        def get_path_linenum(path):
+    def get_path_linenum(self,path):
             prePreLine = {}  # 上上一站的所属线路
             preLine = {}#上一站的所属线路
             currentLine = {}  # 当前站的所属线路
@@ -189,9 +186,34 @@ class BeijingSubway(object):
             #print(path,' : ',lineNum)
             return lineNum
 
-        return sorted(pathes, key=get_path_linenum)
+    def minimum_transfer_first(self,pathes):  # 最少换乘
+        if len(pathes) < 1: return pathes
 
-        #Comprehensive Priority(综合优先)
+
+
+        return sorted(pathes, key=self.get_path_linenum)
+
+
+
+    def comprehensive_first(self,pathes):#Comprehensive Priority(综合优先) 先按照站点数小的，再按换乘少的
+            def mycmp(path_a, path_b):
+                if len(path_a) > len(path_b):
+                    return 1
+                elif len(path_a) > len(path_b):
+                    return -1
+                else:#
+
+                    linenum_a = self.get_path_linenum(path_a)
+                    linenum_b = self.get_path_linenum(path_b)
+                    if linenum_a > linenum_b:
+                        return 1
+                    elif linenum_a < linenum_b:
+                        return -1
+                    else:
+                        return 0
+
+            pathes.sort(key=cmp_to_key(mycmp))
+            return pathes
 
 
 
@@ -200,10 +222,13 @@ class BeijingSubway(object):
 
 if __name__ == '__main__':
 
-    #爬取站点信息
-    initSubwayData(url='https://www.bjsubway.com/station/xltcx/')
+    #爬取站点信息   14号线 官网几个站点顺序不对，人工调整
+    #14号线 张郭庄 园博园 大瓦窑 郭庄子 大井 七里庄 西局 善各庄 陶然桥 永定门外 景泰 蒲黄榆 方庄   十里河 北工大西门 平乐园 北京南站 九龙山 大望路 朝阳公园 枣营 东风北桥 高家园 阜通 望京 金台路 将台 望京南 东湖渠 来广营
+    #initSubwayData(url='https://www.bjsubway.com/station/xltcx/')
     subway = BeijingSubway()
     #最少站点
-    print(subway.search('菜市口','东单',sort=BeijingSubway.SORT.SSP))
+    print(subway.search('磁器口','大望路',sort=BeijingSubway.SORT.SSP))
     #最少换乘
-    print(subway.search('菜市口', '东单',sort= BeijingSubway.SORT.MTP))
+    print(subway.search('磁器口', '大望路',sort= BeijingSubway.SORT.MTP))
+    #综合排序：最少站点-》最少换乘
+    print(subway.search('磁器口', '大望路'))

@@ -64,8 +64,8 @@ def drawMap(connetion_info):
     plt.show()
 
 class BeijingSubway(object):
-    #SPP :Shortest Path Priority（路程最短优先约等于最少站点）, MTP,Minimum Transfer Priority(最少换乘优先)
-    SORT = Enum('Sort', ('SSP', 'MTP'))
+    #SPP :Shortest Path Priority（路程最短优先约等于最少站点）, MTP,Minimum Transfer Priority(最少换乘优先),Comprehensive Priority(综合优先)
+    SORT = Enum('Sort', ('SSP', 'MTP','CP'))
 
     def __init__(self, filename=None):
         """
@@ -133,11 +133,11 @@ class BeijingSubway(object):
             # print('path=',path)
             froninter = path[-1]
             # print('froninter=',froninter)
-            if froninter == '角门西' or froninter == '公益西桥' or froninter == '义和庄':
+            if froninter == '崇文门' or froninter == '北京站' or froninter == '永安里'  or froninter == '建国门':
                 g = 0
-            if froninter in visited: continue
-
-            # print('froninter=',froninter)
+            if  froninter in visited:
+                if not by_way:continue
+           # print('froninter=',froninter)
             if froninter in self.connection_graph:
                 succesors = self.connection_graph[froninter]
                 for city in succesors:
@@ -147,17 +147,23 @@ class BeijingSubway(object):
                     pathes.append(new_path)
                     # print(pathes)
                     if city == desitionation:
-                        return pretty_print(new_path)
+                        if not by_way:
+                            return pretty_print(new_path)
+                        else:
+                            #是否有经过这几个站点
+                            if set(by_way) <= set(new_path):
+                                return pretty_print(new_path)
             visited.add(froninter)
             if sort:
                 if sort == BeijingSubway.SORT.SSP:  # 最少站点优先
                     pathes = self.transfer_station_first(pathes)
                 elif sort == BeijingSubway.SORT.MTP:  # 最少换乘优先
                     pathes = self.minimum_transfer_first(pathes)
-                else:
+                else: #综合排序
                     pathes = self.comprehensive_first(pathes)
             else:
                 pathes = self.comprehensive_first(pathes)
+
         return pretty_print(pathes)
 
 
@@ -221,8 +227,7 @@ class BeijingSubway(object):
 
 
 if __name__ == '__main__':
-
-    #爬取站点信息   14号线 官网几个站点顺序不对，人工调整，可能其他线路也有站点顺序不对的情况
+    #爬取站点信息   14号线 官网几个站点顺序不对，人工调整，可能其他线路也有站点顺序不对的情况,但做法都是一样
     #14号线 张郭庄 园博园 大瓦窑 郭庄子 大井 七里庄 西局  北京南站 陶然桥 永定门外 景泰 蒲黄榆 方庄   十里河 北工大西门 平乐园 九龙山 大望路 朝阳公园 枣营 东风北桥 高家园 阜通 望京 金台路 将台 望京南 东湖渠 来广营 善各庄
     #initSubwayData(url='https://www.bjsubway.com/station/xltcx/')
     subway = BeijingSubway()
@@ -232,3 +237,5 @@ if __name__ == '__main__':
     print(subway.search('磁器口', '大望路',sort= BeijingSubway.SORT.MTP))
     #综合排序：最少站点-》最少换乘
     print(subway.search('磁器口', '大望路'))
+    #输出经过站点的线路
+    print(subway.search('磁器口', '大望路',by_way=['崇文门','东四']))

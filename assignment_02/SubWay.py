@@ -64,7 +64,7 @@ def drawMap(connetion_info):
     plt.show()
 
 class BeijingSubway(object):
-    #SPP :Shortest Path Priority（路程最短优先）, MTP,Minimum Transfer Priority(最少换乘优先)
+    #SPP :Shortest Path Priority（路程最短优先约等于最少站点）, MTP,Minimum Transfer Priority(最少换乘优先)
     SORT = Enum('Sort', ('SSP', 'MTP'))
 
     def __init__(self, filename=None):
@@ -76,7 +76,8 @@ class BeijingSubway(object):
         self.connection_graph =  defaultdict(list)
         #线路名
         self.subways = defaultdict(list)
-
+        #站点其他相关属性：如属于哪些线路
+        self.station = defaultdict(set)
         if filename == None:
             filename = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'subway.txt'
         with open(filename, 'r') as f1:
@@ -93,6 +94,7 @@ class BeijingSubway(object):
 
                     else:
                         self.subways[key].append(value)
+                        self.station[value].add(key)
                     index += 1
 
                 line = f1.readline()
@@ -110,11 +112,11 @@ class BeijingSubway(object):
         for key in self.connection_graph:
             print(str(key) + ':' + str(self.connection_graph[key]))
             print('------------------------------')
-         '''
+        '''
 
 
 
-    def search(self,start,desitionation,by_way=None,sort=None):
+    def search(self, start, desitionation, by_way=None, sort=None):
         """
         搜索从起始站start，到目的地站点destination的路径
         :param start:开始站点
@@ -133,7 +135,7 @@ class BeijingSubway(object):
             # print('path=',path)
             froninter = path[-1]
             # print('froninter=',froninter)
-            if froninter == '角门西' or froninter=='公益西桥' or froninter == '义和庄':
+            if froninter == '角门西' or froninter == '公益西桥' or froninter == '义和庄':
                 g = 0
             if froninter in visited: continue
 
@@ -149,21 +151,48 @@ class BeijingSubway(object):
                     if city == desitionation:
                         return pretty_print(new_path)
             visited.add(froninter)
-            if sort :
-                if sort == BeijingSubway.SORT.SSP:#路程最短优先
+            if sort:
+                if sort == BeijingSubway.SORT.SSP:  # 最少站点优先
                     pathes = self.transfer_station_first(pathes)
-                elif sort == BeijingSubway.SORT.MTP:#最少换乘优先
-                    pathes = self.shortest_path_first(pathes)
-
-
+                elif sort == BeijingSubway.SORT.MTP:  # 最少换乘优先
+                    pathes = self.minimum_transfer_first(pathes)
+            else:
+                pass
         return pretty_print(pathes)
 
-    def transfer_station_first(self,paths):#最小换乘优先
+
+
+    def transfer_station_first(self,paths):#最少站点优先
         return sorted(paths,key=len)
 
-    def shortest_path_first(self,pathes):  # 最短距离优先
+    def minimum_transfer_first(self,pathes):  # 最少换乘
         if len(pathes) < 1: return pathes
-        pass
+
+        def get_path_linenum(path):
+            prePreLine = {}  # 上上一站的所属线路
+            preLine = {}#上一站的所属线路
+            currentLine = {}  # 当前站的所属线路
+            index = 0
+            lineNum = 0 #线路数
+            for station in path:
+                if index == 0:
+                    currentLine = self.station[station]
+                    preLine =  currentLine
+                    prePreLine = preLine
+                else:
+                    currentLine = self.station[station]
+                    if len(currentLine&preLine&prePreLine) == 0:#当前站站点和前面站，前前面站点的无交集，代表来到了一个新站
+                        lineNum += 1
+                    prePreLine = preLine
+                    preLine = currentLine
+                index += 1
+            #print(path,' : ',lineNum)
+            return lineNum
+
+        return sorted(pathes, key=get_path_linenum)
+
+        #Comprehensive Priority(综合优先)
+
 
 
 
@@ -171,7 +200,10 @@ class BeijingSubway(object):
 
 if __name__ == '__main__':
 
-
-    #initSubwayData(url='https://www.bjsubway.com/station/xltcx/')
+    #爬取站点信息
+    initSubwayData(url='https://www.bjsubway.com/station/xltcx/')
     subway = BeijingSubway()
-    print(subway.search('苹果园','天宫院'))
+    #最少站点
+    print(subway.search('菜市口','东单',sort=BeijingSubway.SORT.SSP))
+    #最少换乘
+    print(subway.search('菜市口', '东单',sort= BeijingSubway.SORT.MTP))

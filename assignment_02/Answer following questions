@@ -16,10 +16,10 @@ Ans:It can  accelerate the speed of fitting
 
 5. In the words 'Gredient Descent', what's the Gredient and what's the Descent?
 Ans:Gredient is  the derivative in the multi-dimensional space
-    Descent
+    Descent means that gredient  always decreases,until finding a local minimum of a function
 
 6. What's the advantages of the 3rd gradient descent method compared to the previous methods?
-Ans:
+Ans: The 3rd gradient descent method can always keep the direction  right
 
 7. Using the simple words to describe: What's the machine leanring.
-Ans:
+Ans: automatic

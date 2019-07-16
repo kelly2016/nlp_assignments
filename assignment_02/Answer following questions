@@ -12,10 +12,11 @@ Ans: Yes， the 2nd method  is better than 1st one。
      2）Every time ，the next direction is not sure, it  may be better or be worse
 
 4. Why do we use Derivative / Gredient to fit a target function?
-Ans:
+Ans:It can  accelerate the speed of fitting
 
 5. In the words 'Gredient Descent', what's the Gredient and what's the Descent?
-Ans:
+Ans:Gredient is  the derivative in the multi-dimensional space
+    Descent
 
 6. What's the advantages of the 3rd gradient descent method compared to the previous methods?
 Ans:

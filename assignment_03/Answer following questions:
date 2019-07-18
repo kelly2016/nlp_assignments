@@ -1,23 +1,24 @@
 Why do we need dynamic programming? What's the difference of dynamic programming and previous talked search problme?
 
-Ans:
+Ans:sorry,I really have no idear 　(°_°)
 
 Why do we still need dynamic programming? Why not we train a machine learning to fit a function which could get the right answer based on inputs?
 
-Ans:
+Ans: we should use proper method to solve the problem.
+    And sometimes, it is not necessary  to use machine learning for some problems,
 
 Can you catch up at least 3 problems which could solved by Dynamic Programming?
 
-Ans:
+Ans:1.express delivery ，2.Editdistance, 3.Longest common subsequence
 
 Can you catch up at least 3 problems wich could sloved by Edit Distance?
 
-Ans:
+Ans:1,Spell checker 2.Text similarity 3.DNA sequence detection
 
 Please summarize the three main features of Dynamic Programming, and make a concise explain for each feature.
 
-Ans:
+Ans:1.Overlapping Subproblems 2.Overlapping computing saved in a table 3.Parse solution
 
 What's the disadvantages of Dynamic Programming? (You may need search by yourself in Internet)
 
-Ans:
+Ans:The main limitation to this type of coding is keeping track of previous decisions and partial choices that may be applied to a future answer.

@@ -41,14 +41,14 @@ def w2vTest(modelFile):
     #第二个应用是看两个词向量的相近程度，这里给出了书中两组人的相似程度：
     print("2 .{} and {} 's similarity is {}".format(u'定理',u'公理',model.wv.similarity(u'定理',u'公理')))
     #计算一个词的最近似的词，倒排序
-    print("3 .{} 's  most similar are {}".format('定理', model.most_similar(['定理'])))
+    print("3 .{} 's  most similar are {}".format('定理', model.wv.most_similar(['定理'])))
     #查找异类词
     print("4 . Which is different In {}? is {} ".format('中国,美国,叙利亚,水果',model.wv.doesnt_match(['中国','美国','叙利亚','水果'])))
     #word2vec一个很大的亮点：支持词语的加减运算（实际中可能只有少数例子比较符合）
     print('5 .',model.wv.most_similar(positive = ['概念','学科'],negative = ['结构'],topn = 4))
     #计算两个集合之间的余弦似度,两句话的相似度
-    list1 = ['政治学','是', '一门', '社会科学','学科']#['我','跑','我','学校']
-    list2 = ['研究','政治','行为','政治体制']#['我','去','家']
+    list1 = ['贸易','利用','数学']#['我','跑','我','学校']
+    list2 = ['研究','某种','计算']#['我','去','家']
     list_sim1 = model.wv.n_similarity(list1,list2)
     print('6 .',list_sim1)
 

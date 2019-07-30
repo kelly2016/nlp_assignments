@@ -94,6 +94,6 @@ def view(modelFile):
 if __name__=='__main__':
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     modelFile = dir + 'w2v.model'
-    #train(dir+'wiki_corpus',modelFile , dir+'w2v.v')
-    #w2vTest(modelFile)
+    train(dir+'wiki_corpus',modelFile , dir+'w2v.v')
+    w2vTest(modelFile)
     view(modelFile)

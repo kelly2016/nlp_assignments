@@ -29,3 +29,7 @@ print(vectorized.vocabulary_)
     # {'一条': 1, '天狗': 4, '日来': 5, '一切': 0, '星球': 6, '全宇宙': 3, '便是': 2}
 
 print(tfidf_model)
+
+print(tfidf_model.shape)
+vector_of_d_2 = tfidf_model[0].toarray()[0]
+print(vector_of_d_2)

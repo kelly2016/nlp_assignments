@@ -102,6 +102,7 @@ def classificationreport(y_true , y_pred ,target_names ):
     :param target_names:类别label
     :return:
     """
+    print('accuracy:',accuracy_score(y_true, y_pred))
     print(classification_report(y_true, y_pred, target_names=target_names))
 
 

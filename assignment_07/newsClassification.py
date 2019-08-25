@@ -15,11 +15,18 @@ import math
 from sklearn.metrics import accuracy_score
 from sklearn import metrics
 import random
+from sklearn import svm
+from sklearn.naive_bayes import GaussianNB
+from sklearn.naive_bayes import  MultinomialNB
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import LinearSVC
+from sklearn.svm import NuSVC
+import datetime
 
 PUNCTUATION_PATTERN = r'\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|（|）|＊|＋|，|－|／|：|；|＜|＝|＞|＠|\［|\＼|\］|\＾|＿|｀|\～|｟|｠|\、|〃|》|「|」|『|』|【|】|〔|〕|〖|〗|〘|〙|〚|〛|〜|\〝|\〞|〟|〰|〾|〿|–—|\‘|\“|\„|\‟|\…|\‧|﹏|\.'
 stopword_list = [k.strip() for k in open('/Users/henry/Documents/application/nlp_assignments/data/stopwords.txt', encoding='utf8').readlines() if k.strip() != '']
 stopword_list = set(stopword_list)
-vectorized = TfidfVectorizer(max_features = 300)
+vectorized = TfidfVectorizer(max_features = 300)#
 
 def predict(model,textList,labelList):
     """
@@ -94,7 +101,7 @@ def preprocessing(file,ratio=0.8):
     return X_train_tfidf_model,y_train,X_test_tfidf_model,y_test
 
 
-def classificationreport(y_true , y_pred ,target_names ):
+def classificationreport(classmethodBame ,y_true , y_pred ,target_names ):
     """
 
     :param y_true:真实数值
@@ -102,7 +109,7 @@ def classificationreport(y_true , y_pred ,target_names ):
     :param target_names:类别label
     :return:
     """
-    print('accuracy:',accuracy_score(y_true, y_pred))
+    print('{} accuracy:{}'.format(classmethodBame,accuracy_score(y_true, y_pred)))
     print(classification_report(y_true, y_pred, target_names=target_names))
 
 
@@ -147,6 +154,72 @@ class Logistic_Regression(object):
         return self.lr.predict(X_test)
 
 
+class Svm(object):
+    def __init__(self,dict = None):
+        """
+
+        :param dict:  各类的权重 {1:10 ,0:1}
+        """
+        self.clf  = LinearSVC(C=0.7,class_weight={1:1,0:1})
+            #svm.SVC(C=0.7,class_weight={1:1,0:1},kernel='sigmoid')#ovr
+        #
+        #NuSVC
+            #
+        #C=1.0,class_weight='balanced' if dict==None else dict,kernel='rbf',gamma='auto',decision_function_shape='ovo'
+        #C、kernel、degree、gamma
+
+    def train(self,X_train,y_train):
+        self.clf.fit(X_train,y_train)
+
+    def predict(self,X_test):
+        """
+
+        :param X: 测试列表
+        :return:
+        """
+        return self.clf.predict(X_test)
+
+
+class NaiveBayes(object):
+    def __init__(self):
+        """
+
+        :param dict:  各类的权重 {1:10 ,0:1}
+        """
+        self.gnb = MultinomialNB()
+
+
+    def train(self,X_train,y_train):
+        self.gnb.fit(X_train,y_train)
+
+    def predict(self,X_test):
+        """
+
+        :param X: 测试列表
+        :return:
+        """
+        return self.gnb.predict(X_test)
+
+class RandomForest(object):
+    def __init__(self,n_estimators=100):
+        """
+
+        :param n_estimators: 随机生成树的个数
+        """
+        self.rf = RandomForestClassifier(n_estimators=n_estimators,oob_score=True)
+
+
+
+    def train(self,X_train,y_train):
+        self.rf.fit(X_train,y_train)
+
+    def predict(self,X_test):
+        """
+
+        :param X: 测试列表
+        :return:
+        """
+        return self.rf.predict(X_test)
 
 
 
@@ -155,6 +228,8 @@ if __name__=='__main__':
     fname = '/Users/henry/Documents/application/nlp_assignments/data/sqlResult_1558435.csv'
     X_train_tfidf_model, y_train, X_test_tfidf_model, y_test = preprocessing(fname)
     target_names = ['0','1']
+    print('data has been prepared')
+
     #knn
     knn = kNN(5)
     knn.train(X_train_tfidf_model,y_train)
@@ -163,14 +238,39 @@ if __name__=='__main__':
     #print(metrics.recall_score(y_test, y_pred, average='micro'))
     #print( metrics.f1_score(y_test, y_pred, average='weighted'))
 
-    classificationreport(y_test, y_pred,target_names)
+    classificationreport('kNN',y_test, y_pred,target_names)
 
     #LR
     lr = Logistic_Regression()
     lr.train(X_train_tfidf_model,y_train)
     y_pred = lr.predict(X_test_tfidf_model)
-    classificationreport(y_test, y_pred,target_names)
+    classificationreport('LogisticRegression',y_test, y_pred,target_names)
+     
+    # NB
+    nb = NaiveBayes()
+    nb.train(X_train_tfidf_model, y_train)
+    y_pred = nb.predict(X_test_tfidf_model)
+    classificationreport('NaiveBayes', y_test, y_pred, target_names)
+
+    #SVM
+    start = datetime.datetime.now()
+    sm = Svm()
+    sm.train(X_train_tfidf_model, y_train)
+    y_pred = sm.predict(X_test_tfidf_model)
+    classificationreport('SVM',y_test, y_pred, target_names)
+    end = datetime.datetime.now()
+    print('run time = ',end - start)
+
+    #RandomForest
+    rf = RandomForest()
+    rf.train(X_train_tfidf_model, y_train)
+    y_pred = rf.predict(X_test_tfidf_model)
+    classificationreport('RandomForest', y_test, y_pred, target_names)
+
+
+
+
     #预测盗版
     text = '“受够了！香港，不能再乱下去了！”日前，逾47万香港市民冒雨参加“反暴力、救香港”集会，发出反对暴力、呼唤稳定的香港社会主流声音。连日来，爱国爱港的正义力量不断汇聚，正义呼声响彻香江。“反暴力是香港现在最大及唯一的‘一大诉求’”，这是香港工商界知名人士吴光正的由衷感慨；“希望香港尽快恢复安宁”“还我们一个安稳日子”，这是香港市民的热切期盼……字字句句，无不表达着对暴力行径的强烈谴责，彰显了止暴制乱、恢复秩序的民心所向。'
     label = '网易新闻'
-    print(predict(lr, [text], [label]))
+    print(predict(sm, [text], [label]))

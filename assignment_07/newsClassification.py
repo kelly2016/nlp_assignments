@@ -64,7 +64,7 @@ def preprocessing(file,ratio=0.8):
     #cutWords = [k for k in jieba.cut(article) if k not in stopword_list]
 
     content = pd.read_csv(file, encoding='gb18030')
-    documents = content.apply(lambda row: (str(row['author'])+' '+str(row['title'])+' '+str(row['content'])), axis=1).values.tolist()
+    documents = content.apply(lambda row: (str(row['author'])+' '+str(row['feature'])+' '+str(row['title'])+' '+str(row['content'])), axis=1).values.tolist()
     documents_words =  [list(k for k in jieba.cut(re.sub(PUNCTUATION_PATTERN, ' ', document)) if k not in stopword_list) for document in documents]
     #[list(jieba.cut(re.sub(PUNCTUATION_PATTERN, ' ', document))) for document in documents]
     documents = [" ".join(document_words) for document_words in documents_words]

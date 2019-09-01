@@ -93,6 +93,6 @@ if __name__=='__main__':
     #maybe_download('notMNIST_large.tar.gz', 247336696)
     test_filename = '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_small.tar.gz'
     #maybe_download('notMNIST_small.tar.gz', 8458043)
-
+    #
     train_folders = maybe_extract(train_filename)
     #test_folders = maybe_extract(test_filename)

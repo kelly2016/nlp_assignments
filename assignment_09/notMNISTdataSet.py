@@ -95,4 +95,4 @@ if __name__=='__main__':
     #maybe_download('notMNIST_small.tar.gz', 8458043)
     #
     train_folders = maybe_extract(train_filename)
-    #test_folders = maybe_extract(test_filename)
+    test_folders = maybe_extract(test_filename)

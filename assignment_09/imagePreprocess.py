@@ -17,6 +17,7 @@ pixel_depth = 255.0  # Number of levels per pixel.
 train_size = 200000
 valid_size = 10000
 test_size = 10000
+num_labels = 10
 
 def load_letter(folder, min_num_images):
     """Load the data for a single letter label.把图片序列化"""
@@ -130,11 +131,12 @@ def randomize(dataset, labels):
   shuffled_labels = labels[permutation]
   return shuffled_dataset, shuffled_labels
 
+
+
 def createSet(test_datasets,train_datasets):
 
 
-    valid_dataset, valid_labels, train_dataset, train_labels = None,None,None,None
-    merge_datasets(train_datasets, train_size, valid_size)
+    valid_dataset, valid_labels, train_dataset, train_labels = merge_datasets(train_datasets, train_size, valid_size)
     _, _, test_dataset, test_labels = merge_datasets(test_datasets, test_size)
 
     print('Training:', train_dataset.shape, train_labels.shape)
@@ -144,7 +146,7 @@ def createSet(test_datasets,train_datasets):
     train_dataset, train_labels = randomize(train_dataset, train_labels)
     test_dataset, test_labels = randomize(test_dataset, test_labels)
     valid_dataset, valid_labels = randomize(valid_dataset, valid_labels)
-    return [(train_dataset,train_labels),(valid_dataset,valid_labels),(test_dataset,test_labels)]
+    return (train_dataset,train_labels),(valid_dataset,valid_labels),(test_dataset,test_labels)
 
 def save(train_dataset,train_labels,valid_dataset,valid_labels,test_dataset,test_labels):
     pickle_file = os.path.join(data_root, 'notMNIST.pickle')
@@ -179,18 +181,43 @@ def main():
                     '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_small/H',
                     '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_small/I',
                     '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_small/J']
-    train_folders = ['']
+    train_folders = ['/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/A', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/B', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/C', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/D', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/E', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/F', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/G', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/H', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/I', '/Users/henry/Documents/application/nlp_assignments/data/notMNIST_large/J']
+
     train_datasets = maybe_pickle(train_folders, 45000)
     test_datasets = maybe_pickle(test_folders, 1800)
-    dataset = createSet(test_datasets, train_datasets)
+    (train_dataset, train_labels), (valid_dataset, valid_labels), (test_dataset, test_labels) = createSet(test_datasets, train_datasets)
+    '''
     train_dataset = dataset[0][0]
     train_labels = dataset[0][1]
     valid_dataset  = dataset[1][0]
     valid_labels = dataset[1][1]
     test_dataset  = dataset[2][0]
     test_labels = dataset[2][1]
+    '''
     #[(train_dataset, train_labels), (valid_dataset, valid_labels), (test_dataset, test_labels)]
     save(train_dataset, train_labels, valid_dataset, valid_labels, test_dataset, test_labels)
+
+def getDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/data/notMNIST.pickle'):
+        with open(pickle_file, 'rb') as f:
+            save = pickle.load(f)
+            train_dataset = save['train_dataset']
+            train_labels = save['train_labels']
+            valid_dataset = save['valid_dataset']
+            valid_labels = save['valid_labels']
+            test_dataset = save['test_dataset']
+            test_labels = save['test_labels']
+            del save  # hint to help gc free up memory
+            print('Training set', train_dataset.shape, train_labels.shape)
+            print('Validation set', valid_dataset.shape, valid_labels.shape)
+            print('Test set', test_dataset.shape, test_labels.shape)
+        return (train_dataset,train_labels),(valid_dataset,valid_labels),(test_dataset,test_labels)
+
+def reformat(dataset, labels):
+     dataset = dataset.reshape((-1, image_size * image_size)).astype(np.float32)
+        # Map 0 to [1.0, 0.0, 0.0 ...], 1 to [0.0, 1.0, 0.0 ...]
+     labels = (np.arange(num_labels) == labels[:,None]).astype(np.float32)
+     return dataset, labels
+
 if __name__=='__main__':
      main()
 

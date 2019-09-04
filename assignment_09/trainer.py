@@ -71,7 +71,7 @@ def  batchTrain(num_steps = 3001):
                     print("Minibatch loss at step %d: %f" % (step, l))
                     print("Minibatch accuracy: %.1f%%" % accuracy(predictions, batch_labels))
                     print("Validation accuracy: %.1f%%" % accuracy(valid_prediction.eval(), valid_labels))
-                 print("Test accuracy: %.1f%%" % accuracy(test_prediction.eval(), test_labels))
+                print("Test accuracy: %.1f%%" % accuracy(test_prediction.eval(), test_labels))
 
 def train(num_steps = 801):
     (train_dataset, train_labels), (valid_dataset, valid_labels), (test_dataset, test_labels) = imagePreprocess.getDataSet()

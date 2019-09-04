@@ -213,10 +213,17 @@ def getDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/d
         return (train_dataset,train_labels),(valid_dataset,valid_labels),(test_dataset,test_labels)
 
 def reformat(dataset, labels):
-     dataset = dataset.reshape((-1, image_size * image_size)).astype(np.float32)
+    """
+    把三纬的数据变成2纬，后面的图片n*m合成一纬
+    :param dataset:
+    :param labels:
+    :return:
+    """
+    #-1 means任意行
+    dataset = dataset.reshape((-1, image_size * image_size)).astype(np.float32)
         # Map 0 to [1.0, 0.0, 0.0 ...], 1 to [0.0, 1.0, 0.0 ...]
-     labels = (np.arange(num_labels) == labels[:,None]).astype(np.float32)
-     return dataset, labels
+    labels = (np.arange(num_labels) == labels[:,None]).astype(np.float32)
+    return dataset, labels
 
 if __name__=='__main__':
      main()

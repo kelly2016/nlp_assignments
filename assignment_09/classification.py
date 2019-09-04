@@ -116,6 +116,9 @@ def classificationreport(classmethodBame ,y_true , y_pred ,target_names ):
 
 
 class kNN(object):
+    """
+
+    """
 
     def __init__(self, k):
         """
@@ -149,7 +152,6 @@ class Logistic_Regression(object):
 
     def predict(self,X_test):
         """
-
         :param X: 测试列表
         :return:
         """
@@ -159,6 +161,7 @@ class Logistic_Regression(object):
 class Svm(object):
     def __init__(self,dict = None):
         """
+
 
         :param dict:  各类的权重 {1:10 ,0:1}
         """

@@ -136,6 +136,7 @@ def  nnTrain4(num_steps = 4000):
 
 
 def  nnTrain3(num_steps = 4000):
+    
     """
      stochastic gradient descent training，去掉卷基层，去掉赤化层
      Minibatch accuracy: 93.8%

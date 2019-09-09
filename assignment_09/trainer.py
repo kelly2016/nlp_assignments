@@ -957,6 +957,6 @@ if __name__=='__main__':
     #batchTrain()
     #nnTrain4()
     #nnTrain6()
-    #nnTrain7(40000)
+    nnTrain7(40000)
     #nnTrain8()
-    nnTrain5()
+    #nnTrain5()

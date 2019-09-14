@@ -17,6 +17,7 @@ from gensim.models import Word2Vec
 TRAIN_NUM = 0.8#训练集
 DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
 fearture_num = 100
+labelnum = 5
 class W2V(object):
     """
     利用word2Vector产生句向量
@@ -136,10 +137,17 @@ def saveDataset(contentColumns,labelColumn,pickle_dir,input_file):
 def make_arrays(nb_rows, cls):
     if nb_rows:
         dataset = np.ndarray((nb_rows, cls), dtype=np.float32)
-        labels = np.ndarray(nb_rows, dtype=np.int32)
+        labels = np.zeros((nb_rows, labelnum))
     else:
         dataset, labels = None, None
     return dataset, labels
+
+def createLabel(labelnum,index):
+    label = np.zeros((1, labelnum))
+    label[0,index-1] = 1
+    return label
+
+
 
 def formatDataset(contentColumns,labelColumn,input_file):
     """
@@ -164,7 +172,7 @@ def formatDataset(contentColumns,labelColumn,input_file):
             if  la!=labelColumn  and len(content_line.strip()) > 0:
                v = s2v_w2v.w2vfSentence2Vector(content_line)
                datasets.append(v)
-               datalabels.append(la)
+               datalabels.append( createLabel(labelnum,int(la)))
                if la not in labelsSet:
                    labelsSet.add(la)
 

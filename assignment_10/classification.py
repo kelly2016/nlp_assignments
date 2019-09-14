@@ -9,7 +9,7 @@ import numpy as np
 import  preprocessing
 import datetime
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 #train_subset = 10000
 batch_size = 32
 #beta = 0.5
@@ -90,6 +90,7 @@ def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application
                 offset = (step * batch_size) % (train_labels.shape[0] - batch_size)
                 # Generate a minibatch.
                 batch_data = train_dataset[offset:(offset + batch_size), :]
+
                 batch_labels = train_labels[offset:(offset + batch_size), :]
                 # Prepare a dictionary telling the session where to feed the minibatch.
                 # The key of the dictionary is the placeholder node of the graph to be fed,
@@ -113,8 +114,8 @@ def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application
             print("Test accuracy: %.1f%%" % accuracy(test_prediction.eval(), test_labels))
             print("MaxAccuracy validation accuracy:: %.1f%%" % maxAccuracy)
             print("LastModel is : " ,lastModel)
-            plt.plot(losses)
-            plt.plot(ValiAcc)
+            #plt.plot(losses)
+            #plt.plot(ValiAcc)
 
 
 

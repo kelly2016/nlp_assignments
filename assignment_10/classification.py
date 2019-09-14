@@ -9,7 +9,7 @@ import numpy as np
 import  preprocessing
 import datetime
 import os
-#import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 #train_subset = 10000
 batch_size = 32
 #beta = 0.5
@@ -56,7 +56,7 @@ def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application
         #regularization = tf.nn.l2_loss(weights_1) + tf.nn.l2_loss(weights_2)
         #loss = tf.reduce_mean(loss + beta * regularization)
 
-        start_learning_rate = 0.01
+        start_learning_rate = 0.001
         global_step = tf.Variable(0)  # count the number of steps taken.
         learning_rate = tf.train.exponential_decay(start_learning_rate, global_step, 100000, 0.96, staircase=True)
         #optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss, global_step=global_step)
@@ -114,8 +114,9 @@ def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application
             print("Test accuracy: %.1f%%" % accuracy(test_prediction.eval(), test_labels))
             print("MaxAccuracy validation accuracy:: %.1f%%" % maxAccuracy)
             print("LastModel is : " ,lastModel)
-            #plt.plot(losses)
-            #plt.plot(ValiAcc)
+            plt.plot(losses)
+            plt.plot(ValiAcc)
+            plt.show()
 
 
 

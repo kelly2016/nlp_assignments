@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
+# Filename: sentence2Vector.py
 # @Time    : 2019-09-14 10:13
 # @Author  : Kelly
 # @Email   : 289786098@qq.com
 # @File    : Sentence2Vector.py
-# @Description:用不同的方案生成句子向量
+# @Description:用不同的方案生成句子向量，有时间在做
 import jieba
 from gensim.models import Word2Vec
 from gensim.models.doc2vec import Doc2Vec, TaggedDocument
@@ -11,16 +12,7 @@ import  preprocessing
 import numpy as np
 import os
 
-stopword_list =preprocessing.get_stopwords()
-
-def d2vfSentence2Vector():
-    pass
-
-
-def tfidfSentence2Vector():
-    pass
-
-
+#stopword_list =preprocessing.get_stopwords()
 
 class W2V(object):
     """
@@ -39,12 +31,19 @@ class W2V(object):
 
         # words = [k for k in jieba.cut(sentence) if k not in stopword_list]
         words = preprocessing.cut2list(sentence)
-        sen_vec = np.sum([self.mode[k] for k in words if k in self.mode], axis=0) / len(words)
+        sen_vec = np.sum([self.model.wv[k] for k in words if k in self.model], axis=0) / len(words)
 
         return sen_vec
 
-
-if __name__=='__main__':
-
+def d2vfSentence2Vector():
     pass
 
+
+def tfidfSentence2Vector():
+    pass
+
+
+
+
+if __name__=='__main__':
+    pass

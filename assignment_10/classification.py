@@ -8,21 +8,21 @@ import tensorflow as tf
 import numpy as np
 import  preprocessing
 import datetime
-num_labels = 10
-
-train_subset = 10000
+import os
+import matplotlib.pyplot as plt
+#train_subset = 10000
 batch_size = 32
-beta = 0.5
+#beta = 0.5
 #句向量的纬度
-fearture_num = 14
-num_labels = 5
+fearture_num = 100
 
 
-def  neuralTrain(num_steps = 4000,modelFile = ''):
+
+def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application/nlp_assignments/data/'):
     (train_dataset, train_labels), (valid_dataset, valid_labels), (
         test_dataset, test_labels),labelsSet = preprocessing.getDataSet()
     print('train_datasetnum = {},valid_dataset num = {} ,test_dataset num = {} '.format(len(train_dataset), len(valid_dataset),  len(test_labels)))
-
+    num_labels = len(labelsSet)
     nodes_num = 1024
     graph = tf.Graph()
 
@@ -80,6 +80,8 @@ def  neuralTrain(num_steps = 4000,modelFile = ''):
         with tf.Session(graph=graph) as session:
             tf.global_variables_initializer().run()
             print("initialized")
+            losses = []
+            ValiAcc = []
             maxAccuracy = 0.0
             lastModel = ''
             for step in range(num_steps):
@@ -94,21 +96,25 @@ def  neuralTrain(num_steps = 4000,modelFile = ''):
                 # and the value is the numpy array to feed to it.
                 feed_dict = {tf_train_dataset: batch_data, tf_train_labels: batch_labels}
                 _, l, predictions = session.run([optimizer, loss, train_prediction], feed_dict=feed_dict)
+                losses.append(l)
                 if (step % 100 == 0):
                     print("Minibatch loss at step %d: %f" % (step, l))
                     print("Minibatch accuracy: %.1f%%" % accuracy(predictions, batch_labels))
                     acc = accuracy(valid_prediction.eval(), valid_labels)
+                    ValiAcc.append(acc)
                     print("Validation accuracy: %.1f%%" %acc)
                     if acc > maxAccuracy:
                         maxAccuracy=acc
                         nowTime = datetime.datetime.now().strftime('%Y%m%d_%H%M%S')
-                        lastModel = modelFile + '/' + nowTime + '_model.ckpt'
+                        lastModel = modelDir + '/' + nowTime + '_model.ckpt'
                         saver.save(session, lastModel)
                         print("Save current model  : ", lastModel)
 
             print("Test accuracy: %.1f%%" % accuracy(test_prediction.eval(), test_labels))
             print("MaxAccuracy validation accuracy:: %.1f%%" % maxAccuracy)
             print("LastModel is : " ,lastModel)
+            plt.plot(losses)
+            plt.plot(ValiAcc)
 
 
 
@@ -118,5 +124,7 @@ def accuracy(predictions,labels):
           / predictions.shape[0])
 
 if __name__=='__main__':
-    pass
+    dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
+    print('dir = ', dir)
+    neuralTrain( modelDir=dir)
 

@@ -31,16 +31,36 @@ def train(corpusFile,modelFile,vectorFile):
 def retrain(corpusFile,modelFile,vectorFile):
     """
 
+
+    增量训练需要的文件
+    word2vec模型文件：
+
+    (1) zhwiki.word2vec.model
+
+    (2) zhwiki.word2vec.model.trainables.syn1neg.npy
+
+    (3) zhwiki.word2vec.model.wv.vectors.npy
+
+    word2vec词向量文件：
+
+    zhwiki.word2vec.vectors
     :param corpusFile: 训练模型语料
     :param modelFile: 保存的模型文件地址
     :param vectorFile: 保存的词量文件地址
     :return:
     """
+
+    print('modelFile=',modelFile)
     model =  Word2Vec.load(modelFile)
-    model.train(LineSentence(corpusFile))
+    # 更新词汇表
+    model.build_vocab(LineSentence(corpusFile), update=True)
+    # epoch=iter语料库的迭代次数；（默认为5）  total_examples:句子数
+    model.train(LineSentence(corpusFile), total_examples=model.corpus_count, epochs=model.epochs)
     model.save(modelFile)
     model.wv.save_word2vec_format(vectorFile, binary=False)
+    print('retrain finished the modelFile = {} and the vectorFile = {} '.format(modelFile,vectorFile))
     return modelFile,vectorFile
+
 
 def w2vTest(modelFile):
     """
@@ -112,7 +132,7 @@ if __name__=='__main__':
     modelFile = dir + 'w2v.model'
     #train(dir+'wiki_corpus',modelFile , dir+'w2v.v')
     #train(dir + 'zh_wiki_corpus00', modelFile, dir + 'w2v.v')
-    #retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
+    retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
     w2vTest(modelFile)
     view(modelFile)

@@ -9,18 +9,18 @@ import numpy as np
 import  preprocessing
 import datetime
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 #train_subset = 10000
 batch_size = 32
 #beta = 0.5
 #句向量的纬度
 fearture_num = 100
+dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
 
 
-
-def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application/nlp_assignments/data/'):
+def  neuralTrain(num_steps = 4000,modelDir = dir):
     (train_dataset, train_labels), (valid_dataset, valid_labels), (
-        test_dataset, test_labels),labelsSet = preprocessing.getDataSet()
+        test_dataset, test_labels),labelsSet = preprocessing.getDataSet(dir+'s2v_w2v.pickle')
     print('train_datasetnum = {},valid_dataset num = {} ,test_dataset num = {} '.format(len(train_dataset), len(valid_dataset),  len(test_labels)))
     num_labels = len(labelsSet)
     nodes_num = 1024
@@ -45,7 +45,7 @@ def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application
         logits_1 = tf.matmul(tf_train_dataset, weights_1) + biases_1
         relu_layer = tf.nn.relu(logits_1)
         # Dropout on hidden layer: RELU layer
-        keep_prob = 0.9
+        keep_prob = 0.5
         relu_layer_dropout = tf.nn.dropout(relu_layer, keep_prob)
 
         logits_2 = tf.matmul(relu_layer_dropout, weights_2) + biases_2
@@ -114,9 +114,9 @@ def  neuralTrain(num_steps = 4000,modelDir = '/Users/henry/Documents/application
             print("Test accuracy: %.1f%%" % accuracy(test_prediction.eval(), test_labels))
             print("MaxAccuracy validation accuracy:: %.1f%%" % maxAccuracy)
             print("LastModel is : " ,lastModel)
-            plt.plot(losses)
-            plt.plot(ValiAcc)
-            plt.show()
+            #plt.plot(losses)
+            #plt.plot(ValiAcc)
+            #plt.show()
 
 
 
@@ -128,5 +128,5 @@ def accuracy(predictions,labels):
 if __name__=='__main__':
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
     print('dir = ', dir)
-    neuralTrain( modelDir=dir)
+    neuralTrain(10000, modelDir=dir)
 

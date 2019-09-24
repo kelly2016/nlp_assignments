@@ -25,7 +25,7 @@ import csv
 import re
 from collections import Counter
 
-from assignment_01 import preprocessing
+from assignment_01_basedRule import preprocessing
 
 news = """
 news => 主语 状语 谓语 宾语

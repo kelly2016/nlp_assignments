@@ -127,6 +127,7 @@ def view(modelFile):
 
 
 if __name__=='__main__':
+
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
     modelFile = dir + 'w2v.model'

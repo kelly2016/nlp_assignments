@@ -9,6 +9,8 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.cluster import KMeans
 import  classification
 
+
+
 class Kmeans(object):
     def __init__(self,n_clusters=3,miniBatch=False,batch_size=100,random_state=9):
         """

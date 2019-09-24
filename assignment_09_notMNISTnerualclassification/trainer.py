@@ -18,7 +18,9 @@ batch_size = 32
 beta = 0.5
 
 
-def  nnTrain8(num_steps = 000):
+
+
+def  nnTrain8(num_steps = 4000):
     """
      加1层1024隐藏层+learning_rate+Dropout+正则
       Minibatch loss at step 3900: 2.540312
@@ -162,7 +164,7 @@ def  nnTrain7(num_steps = 4000):
         learning_rate = tf.train.exponential_decay(start_learning_rate, global_step, 100000, 0.96, staircase=True)
         #optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss, global_step=global_step)
         # optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
-        optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss, global_step=global_step)
+        optimizer = tf.train.AdamOptimizer(learning_rate).minimize(loss)#, global_step=global_step
 
         # Predictions for the training, validation, and test data.
         train_prediction = tf.nn.softmax(logits_2)
@@ -426,7 +428,8 @@ def  nnTrain4(num_steps = 4000):
         #regularization = tf.nn.l2_loss(weights_1)+tf.nn.l2_loss(weights_2)
         #loss = tf.reduce_mean(loss + beta * regularization)
 
-
+        loss = tf.nn.l2_loss(tf.reduce_mean(
+            tf.nn.softmax_cross_entropy_with_logits(labels=tf_train_labels, logits=logits_2)))
 
         learning_rate = 0.01
         #optimizer = tf.train.GradientDescentOptimizer(learning_rate).minimize(loss)
@@ -957,6 +960,7 @@ if __name__=='__main__':
     #batchTrain()
     #nnTrain4()
     #nnTrain6()
-    nnTrain7(40000)
-    #nnTrain8()
+    #nnTrain7(40000)
+    nnTrain8()
     #nnTrain5()
+    #nnTrain2_1()

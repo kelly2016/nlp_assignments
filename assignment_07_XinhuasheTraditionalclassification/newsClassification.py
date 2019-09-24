@@ -40,6 +40,8 @@ def predict(model,textList,labelList):
 
     documents = [" ".join(document_words) for document_words in documents_words]
     X_test_tfidf_model = vectorized.transform(documents)
+
+
     y_pred = model.predict(X_test_tfidf_model)
     print(y_pred.shape)
     ret = []

@@ -115,11 +115,11 @@ def classificationreport(classmethodBame ,y_true , y_pred ,target_names ):
     print(classification_report(y_true, y_pred, target_names=target_names))
 
 
+
 class kNN(object):
     """
 
     """
-
     def __init__(self, k):
         """
 

@@ -1,4 +1,4 @@
-import data_io
+from sentence_embedding import data_io
 
 class tree(object):
 

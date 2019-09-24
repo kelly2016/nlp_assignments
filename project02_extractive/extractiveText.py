@@ -124,7 +124,7 @@ def preproccessSentences(sentences):
     newSentences = []
     if sentences is not None:
         for sentence in sentences:
-            words = analyzer.segment(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
+            words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
             newSentences.append(' '.join(words))
     return newSentences
 

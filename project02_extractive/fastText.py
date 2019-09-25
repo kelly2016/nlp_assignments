@@ -9,13 +9,13 @@
 import multiprocessing
 import os
 from gensim.models import FastText
-import matplotlib.pylab as plt
+#import matplotlib.pylab as plt
 from sklearn.manifold import TSNE
 from gensim.test.utils import get_tmpfile
 #from gensim.models.utils_any2vec import _save_word2vec_format, _load_word2vec_format, _compute_ngrams, _ft_hash
 
-plt.rcParams['font.sans-serif'] = ['SimHei']
-plt.rcParams['axes.unicode_minus'] = False
+#plt.rcParams['font.sans-serif'] = ['SimHei']
+#plt.rcParams['axes.unicode_minus'] = False
 
 def train(corpusFile,modelFile,vectorFile):
     """
@@ -94,7 +94,7 @@ def fastTextTest(modelFile):
     list_sim1 = model.wv.n_similarity(list1,list2)
     print('6 .',list_sim1)
 
-
+'''
 def tsne_plot(model):
     "Creates and TSNE model and plots it"
     labels = []
@@ -132,6 +132,7 @@ def view(modelFile):
     model = FastText.load(modelFile)
     tsne_plot(model)
 '''
+'''
 def fastTextNgramsVector(fasttext_model):
     fasttext_word_list = fasttext_model.wv.vocab.keys()
     ngramsVector = {}
@@ -147,11 +148,11 @@ def fastTextNgramsVector(fasttext_model):
 
 if __name__=='__main__':
 
-    dir = '/Users/henry/Documents/application/nlp_assignments/project02_extractive/'#os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
+    dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
     modelFile = dir + 'fasttext.model'
-    #train(dir+'test',modelFile , dir+'ft.v')
+    train(corpusFile=dir+'wiki_corpus_ltp',modelFile=modelFile , vectorFile=dir+'fasttext.v')
     #retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
-    fastTextTest(modelFile)
-    view(modelFile)
+    #fastTextTest(modelFile)
+    #view(modelFile)

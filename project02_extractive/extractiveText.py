@@ -9,14 +9,16 @@ import pyltpAnalyzer
 import re
 from sentence_embedding import data_io,params, SIF_embedding
 from functools import cmp_to_key
+import jieba
+import fastText
 
 WORDFILE  =  ''# word vector file, can be downloaded from GloVe website; it's quite large but you can truncate it and use only say the top 50000 word vectors to save time
 WEIGHTFILE = ''# each line is a word and its frequency
 N = 5
 PUNCTUATION_PATTERN = r'\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|（|）|＊|＋|，|－|／|：|；|＜|＝|＞|＠|\［|\＼|\］|\＾|＿|｀|\～|｟|｠|\、|〃|》|「|」|『|』|【|】|〔|〕|〖|〗|〘|〙|〚|〛|〜|\〝|\〞|〟|〰|〾|〿|–—|\‘|\“|\„|\‟|\…|\‧|﹏|\.'
-
+MODELFILE = ''
 analyzer = pyltpAnalyzer.PyltpAnalyzer()
-
+model = fastText.FastText.load(MODELFILE)
 # input
 wordfile = '/Users/henry/Documents/application/newsExtract/news/data/ltp_data/glove.840B.300d.txt' # word vector file, can be downloaded from GloVe website; it's quite large but you can truncate it and use only say the top 50000 word vectors to save time
 weightfile = '/Users/henry/Documents/application/newsExtract/news/data/ltp_data/enwiki_vocab_min200.txt' # each line is a word and its frequency
@@ -65,9 +67,29 @@ def organize(scores,oriSentences):
     return text
 
 
-
-
 def getSentencesEmbeddings(sentences):
+    """
+    获取句子向量
+    :param sentences:
+    :return:
+    """
+    embeddings = None
+
+    # load word weights
+    word2weight = data_io.getWordWeight(weightfile, weightpara)  # word2weight['str'] is the weight for the word 'str'
+    # load sentences
+    x, m = data_io.sentences2matrixFromModel(sentences)  # x is the array of word , m is the binary mask indicating whether there is a word in that location
+    w = data_io.seq2weightFromFreq(x, m, word2weight)  # get word weights
+
+    # set parameters
+    parameters = params.params()
+    parameters.rmpc = rmpc
+    # get SIF embedding
+    embedding = SIF_embedding.SIF_embeddingFromModel(model, x, w, parameters)  # embedding[i,:] is the embedding for sentence i
+
+    return embeddings
+
+def getSentencesEmbeddings2(sentences):
     """
     获取句子向量
     :param sentences:
@@ -124,7 +146,8 @@ def preproccessSentences(sentences):
     newSentences = []
     if sentences is not None:
         for sentence in sentences:
-            words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
+            #words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
+            words = jieba.cut(re.sub(PUNCTUATION_PATTERN, ' ', sentence), cut_all=False)
             newSentences.append(' '.join(words))
     return newSentences
 

@@ -21,6 +21,9 @@ def getWordmap(textfile):
         We.append(v)
     return (words, np.array(We))
 
+
+
+
 def prepare_data(list_of_seqs):
     lengths = [len(s) for s in list_of_seqs]
     n_samples = len(list_of_seqs)
@@ -50,6 +53,9 @@ def getSeq(p1,words):
     for i in p1:
         X1.append(lookupIDX(words,i))
     return X1
+
+
+
 
 def getSeqs(p1,p2,words):
     p1 = p1.split()
@@ -189,6 +195,15 @@ def getDataSentiment(batch):
     scores = np.asarray(scores,dtype='float32')
     return (scores,g1x,g1mask)
 
+def sentences2matrixFromModel(sentences):
+    """
+    Given a list of sentences, output array of word indices that can be fed into the algorithms.
+    :param sentences: a list of sentences
+    :return: x1, m1. x1[i, :] is the word maxtrix in sentence i, m1[i,:] is the mask for sentence i (0 means no word at the location)
+    """
+    x1,m1 = prepare_data(sentences)
+    return x1, m1
+
 def sentences2idx(sentences, words):
     """
     Given a list of sentences, output array of word indices that can be fed into the algorithms.
@@ -299,7 +314,20 @@ def getWeight(words, word2weight):
             weight4ind[ind] = 1.0
     return weight4ind
 
-def seq2weight(seq, mask, weight4ind):
+
+def seq2weightFromFreq(seq, mask, word2weight):
+    weight = np.zeros(seq.shape).astype('float32')
+    for i in range(seq.shape[0]):
+        for j in range(seq.shape[1]):
+            if mask[i,j] > 0 and seq[i,j] >= 0:
+                if seq[i,j] in word2weight:
+                    weight[i, j] = word2weight[seq[i, j]]
+                else:
+                    weight[i, j] = 1.0
+    weight = np.asarray(weight, dtype='float32')
+    return weight
+
+def seq2weight(seq, mask, weight4ind):#改
     weight = np.zeros(seq.shape).astype('float32')
     for i in range(seq.shape[0]):
         for j in range(seq.shape[1]):
@@ -375,3 +403,7 @@ def getIDFWeight(wordfile, save_file=''):
     if save_file:
         pickle.dump(weight4ind, open(save_file, 'w'))
     return weight4ind
+
+if __name__=='__main__':
+    wordfile='/Users/henry/Documents/application/nlp_assignments/project02_extractive/ft.v'
+    (words, We) = getWordmap(wordfile)

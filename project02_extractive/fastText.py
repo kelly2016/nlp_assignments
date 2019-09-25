@@ -8,9 +8,12 @@
 
 import multiprocessing
 import os
-
+from gensim.models import FastText
 import matplotlib.pylab as plt
 from sklearn.manifold import TSNE
+from gensim.test.utils import get_tmpfile
+#from gensim.models.utils_any2vec import _save_word2vec_format, _load_word2vec_format, _compute_ngrams, _ft_hash
+
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -22,9 +25,12 @@ def train(corpusFile,modelFile,vectorFile):
     :param vectorFile: 保存的词量文件地址
     :return:
     """
-
-    model = Word2Vec(LineSentence(corpusFile), size=100, window=5, min_count=2, workers=multiprocessing.cpu_count())
-    model.save(modelFile)
+    model = FastText( min_count=1)  # instantiate
+    model.build_vocab(corpus_file=corpusFile)  # scan over corpus to build the vocabulary
+    total_words = model.corpus_total_words  # number of words in the corpus
+    model.train(corpus_file=corpusFile, total_words=total_words, epochs=5,workers=multiprocessing.cpu_count())
+    fname = get_tmpfile(modelFile)
+    model.save(fname)
     model.wv.save_word2vec_format(vectorFile, binary=False)
     return modelFile,vectorFile
 
@@ -33,30 +39,18 @@ def retrain(corpusFile,modelFile,vectorFile):
 
 
     增量训练需要的文件
-    word2vec模型文件：
-
-    (1) zhwiki.word2vec.model
-
-    (2) zhwiki.word2vec.model.trainables.syn1neg.npy
-
-    (3) zhwiki.word2vec.model.wv.vectors.npy
-
-    word2vec词向量文件：
-
-    zhwiki.word2vec.vectors
     :param corpusFile: 训练模型语料
     :param modelFile: 保存的模型文件地址
     :param vectorFile: 保存的词量文件地址
     :return:
     """
-
-    print('modelFile=',modelFile)
-    model =  Word2Vec.load(modelFile)
-    # 更新词汇表
-    model.build_vocab(LineSentence(corpusFile), update=True)
-    # epoch=iter语料库的迭代次数；（默认为5）  total_examples:句子数
-    model.train(LineSentence(corpusFile), total_examples=model.corpus_count, epochs=model.epochs)
-    model.save(modelFile)
+    print('modelFile=', modelFile)
+    model = FastText.load(modelFile)  # instantiate
+    model.build_vocab(corpus_file=corpusFile, update=True)
+    total_words = model.corpus_total_words  # number of words in the corpus
+    model.train(corpus_file=corpusFile, total_words=total_words, epochs=5,workers=multiprocessing.cpu_count())
+    fname = get_tmpfile(modelFile)
+    model.save(fname)
     model.wv.save_word2vec_format(vectorFile, binary=False)
     print('retrain finished the modelFile = {} and the vectorFile = {} '.format(modelFile,vectorFile))
     return modelFile,vectorFile
@@ -68,9 +62,22 @@ def fastTextTest(modelFile):
     :param modelFile:
     :return:
     """
-    model = Word2Vec.load(modelFile)
+    model = FastText.load(modelFile)
+    print('wv.vector_size' , model.wv.vector_size)
+
+    print("中国商品's vector is {}".format( model.wv['中国商品']))
+    print('商' in model.wv.vocab)
+    print(model.most_similar("商"))
+    #print(fastTextNgramsVector(model))
+    print("商务部's vector is {}".format(model.wv['商务部']))
+    print("商品's vector is {}".format(model.wv['商品']))
     #查看字典
-    print(model.wv.vocab)
+    for word in model.wv.vocab:
+        print("{}'s vector is {}".format(word,model.wv[word]))
+
+
+
+
     #词向量存储在model.wv的KeyedVectors实例中，可以直接在KeyedVectors中查询词向量。
     print("1 .{} 's vector is {}".format('研究',model.wv['研究']))
     #第二个应用是看两个词向量的相近程度，这里给出了书中两组人的相似程度：
@@ -122,18 +129,29 @@ def view(modelFile):
     可视化查看
     :return:
     """
-    model = Word2Vec.load(modelFile)
+    model = FastText.load(modelFile)
     tsne_plot(model)
-
+'''
+def fastTextNgramsVector(fasttext_model):
+    fasttext_word_list = fasttext_model.wv.vocab.keys()
+    ngramsVector = {}
+    ngram_weights = fasttext_model.wv.vectors_ngrams # (10, 4)
+    for word in fasttext_word_list:
+        ngrams = _compute_ngrams(word,min_n = fasttext_model.wv.min_n,max_n = fasttext_model.wv.max_n)
+        for ngram in ngrams:
+            ngram_hash = _ft_hash(ngram) % fasttext_model.wv.bucket
+            if ngram_hash in fasttext_model.wv.hash2index:
+                ngramsVector[ngram] = ngram_weights[fasttext_model.wv.hash2index[ngram_hash]]
+    return ngramsVector
+'''
 
 if __name__=='__main__':
 
-    dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
+    dir = '/Users/henry/Documents/application/nlp_assignments/project02_extractive/'#os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
     modelFile = dir + 'fasttext.model'
-    #train(dir+'wiki_corpus',modelFile , dir+'w2v.v')
-    #train(dir + 'zh_wiki_corpus00', modelFile, dir + 'w2v.v')
-    retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
+    #train(dir+'test',modelFile , dir+'ft.v')
+    #retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
     fastTextTest(modelFile)
     view(modelFile)

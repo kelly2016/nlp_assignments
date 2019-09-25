@@ -2,7 +2,25 @@ import numpy as np
 from sklearn.decomposition import TruncatedSVD
 
 
-def get_weighted_average(We, x, w):
+
+def get_weighted_average_from_model(model, x, w):#改
+    """
+    Compute the weighted average vectors
+    :param We: We[i,:] is the vector for word i
+    :param x: x[i, :] are the indices of the words in sentence i
+    :param w: w[i, :] are the weights for the words in sentence i
+    :return: emb[i, :] are the weighted average vector for sentence i
+    """
+    n_samples = x.shape[0]
+    emb = np.zeros((n_samples, model.wv.vector_size))
+    for i in range(n_samples):
+        v = []
+        for w in x[i,:]:
+            v.append(model.wv[w])
+        emb[i,:] = w[i,:].dot(np.array(v)) / np.count_nonzero(w[i,:])
+    return emb
+
+def get_weighted_average(We, x, w):#改
     """
     Compute the weighted average vectors
     :param We: We[i,:] is the vector for word i
@@ -42,7 +60,7 @@ def remove_pc(X, npc=1):
     return XX
 
 
-def SIF_embedding(We, x, w, params):
+def SIF_embedding(We, x, w, params):#改
     """
     Compute the scores between pairs of sentences using weighted average + removing the projection on the first principal component
     :param We: We[i,:] is the vector for word i
@@ -52,6 +70,21 @@ def SIF_embedding(We, x, w, params):
     :return: emb, emb[i, :] is the embedding for sentence i
     """
     emb = get_weighted_average(We, x, w)
+    if  params.rmpc > 0:
+        emb = remove_pc(emb, params.rmpc)
+    return emb
+
+
+def SIF_embeddingFromModel(model, x, w, params):
+    """
+    Compute the scores between pairs of sentences using weighted average + removing the projection on the first principal component
+    :param We: We[i,:] is the vector for word i
+    :param x: x[i, :] are the indices of the words in the i-th sentence
+    :param w: w[i, :] are the weights for the words in the i-th sentence
+    :param params.rmpc: if >0, remove the projections of the sentence embeddings to their first principal component
+    :return: emb, emb[i, :] is the embedding for sentence i
+    """
+    emb = get_weighted_average_from_model(We, x, w)
     if  params.rmpc > 0:
         emb = remove_pc(emb, params.rmpc)
     return emb

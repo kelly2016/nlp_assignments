@@ -27,11 +27,14 @@ def train(corpusFile,modelFile,vectorFile):
     """
     sentences = []
     with open(corpusFile) as f:
-        sentences = f.readlines()
+        lines = f.readlines()
+        for line in lines:
+            sentences += [line.split()]
     model = FastText( min_count=1)  # instantiate
     #云服务器的老版本
+
     model.build_vocab(sentences=sentences)  # scan over corpus to build the vocabulary
-    model.train(sentences, total_examples=model.corpus_count, epochs=model.epochs,workers=multiprocessing.cpu_count())
+    model.train(sentences, total_examples=len(sentences), epochs=10,workers=multiprocessing.cpu_count())
     '''
     model.build_vocab(corpus_file=corpusFile)  # scan over corpus to build the vocabulary
     total_words = model.corpus_total_words  # number of words in the corpus
@@ -75,11 +78,11 @@ def fastTextTest(modelFile):
     model = FastText.load(modelFile)
     print('wv.vector_size' , model.wv.vector_size)
 
-    print("中国商品's vector is {}".format( model.wv['中国商品']))
-    print('商' in model.wv.vocab)
-    print(model.most_similar("商"))
+    print("文学's vector is {}".format( model.wv['文学']))
+    print('美方' in model.wv.vocab)
+    print(model.most_similar("文学"))
     #print(fastTextNgramsVector(model))
-    print("商务部's vector is {}".format(model.wv['商务部']))
+    print("希腊语's vector is {}".format(model.wv['希腊语']))
     print("商品's vector is {}".format(model.wv['商品']))
     #查看字典
     for word in model.wv.vocab:
@@ -160,9 +163,9 @@ if __name__=='__main__':
     setproctitle.setproctitle('newrun')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
-    modelFile = dir + 'fasttext.model'
-    train(corpusFile=dir+'wiki_corpus_ltp',modelFile=modelFile , vectorFile=dir+'fasttext2.v')
+    modelFile = dir +'fasttext.model'#
+    train(corpusFile=dir+'wiki_corpus_ltp',modelFile=modelFile , vectorFile=dir+'fasttext.v')#
     #retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
-    #fastTextTest(modelFile)
+    fastTextTest(modelFile)
     #view(modelFile)

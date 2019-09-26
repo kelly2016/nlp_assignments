@@ -165,6 +165,8 @@ if __name__=='__main__':
     print('dir = ',dir)
     modelFile = dir +'fasttext.model'#
     train(corpusFile=dir+'wiki_corpus_ltp',modelFile=modelFile , vectorFile=dir+'fasttext.v')#
+    #modelFile = 'fasttext.model'  #
+    #train(corpusFile= 'test', modelFile=modelFile, vectorFile= 'fl.v')  #
     #retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
     fastTextTest(modelFile)

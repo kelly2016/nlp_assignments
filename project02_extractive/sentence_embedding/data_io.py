@@ -23,7 +23,6 @@ def getWordmap(textfile):
 
 
 
-
 def prepare_data(list_of_seqs):
     lengths = [len(s) for s in list_of_seqs]
     n_samples = len(list_of_seqs)
@@ -35,6 +34,18 @@ def prepare_data(list_of_seqs):
         x_mask[idx, :lengths[idx]] = 1.
     x_mask = np.asarray(x_mask, dtype='float32')
     return x, x_mask
+
+def prepare_data2(list_of_seqs):
+    lengths = [len(s) for s in list_of_seqs]
+    n_samples = len(list_of_seqs)
+    maxlen = np.max(lengths)
+    #x = np.zeros((n_samples, maxlen)).astype('int32')
+
+    x_mask = np.zeros((n_samples, maxlen)).astype('float32')
+    for idx, s in enumerate(list_of_seqs):
+        x_mask[idx, :lengths[idx]] = 1.
+    x_mask = np.asarray(x_mask, dtype='float32')
+    return list_of_seqs, x_mask
 
 def lookupIDX(words,w):
     w = w.lower()
@@ -201,7 +212,8 @@ def sentences2matrixFromModel(sentences):
     :param sentences: a list of sentences
     :return: x1, m1. x1[i, :] is the word maxtrix in sentence i, m1[i,:] is the mask for sentence i (0 means no word at the location)
     """
-    x1,m1 = prepare_data(sentences)
+
+    x1,m1 = prepare_data2(sentences)
     return x1, m1
 
 def sentences2idx(sentences, words):
@@ -301,13 +313,13 @@ def getWordWeight(weightfile, a=1e-3):
                 N += float(i[1])
             else:
                 print(i)
-    for key, value in word2weight.iteritems():
+    for key, value in word2weight.items():
         word2weight[key] = a / (a + value/N)
     return word2weight
 
 def getWeight(words, word2weight):
     weight4ind = {}
-    for word, ind in words.iteritems():
+    for word, ind in words.items():
         if word in word2weight:
             weight4ind[ind] = word2weight[word]
         else:
@@ -316,14 +328,15 @@ def getWeight(words, word2weight):
 
 
 def seq2weightFromFreq(seq, mask, word2weight):
-    weight = np.zeros(seq.shape).astype('float32')
-    for i in range(seq.shape[0]):
-        for j in range(seq.shape[1]):
-            if mask[i,j] > 0 and seq[i,j] >= 0:
-                if seq[i,j] in word2weight:
-                    weight[i, j] = word2weight[seq[i, j]]
+    weight = np.zeros(mask.shape).astype('float32')
+    for i in range(len(seq)):
+        for j in range(len(seq[i])):
+            if mask[i,j] > 0 and seq[i][j] is not None:
+                if seq[i][j] in word2weight:
+                    weight[i, j] = word2weight[seq[i][j]]
                 else:
                     weight[i, j] = 1.0
+                    print('seq[{}][{}] = {} not in word2weight. '.format(i,j,seq[i][j]))
     weight = np.asarray(weight, dtype='float32')
     return weight
 

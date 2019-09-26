@@ -5,7 +5,7 @@
 # @File    : util.py
 # @Description:
 import os
-
+import numpy as np
 def saveWeightfile(file,srcFile):
     """
     读取分词文件srcFile，统计每个词的词频，并写入文件file
@@ -35,6 +35,11 @@ def saveWeightfile(file,srcFile):
     output.close()
 
 if __name__ == '__main__':
+    X = np.array([[1, 2, 3, 4],
+                  [5, 6, 7, 8],
+                  [9, 10, 11, 12]])
+    X_2 = X.resize((10, X.shape[1]))
+    print("X:\n", X)
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
     print('dir = ', dir)
 

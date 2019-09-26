@@ -11,13 +11,16 @@ def get_weighted_average_from_model(model, x, w):#改
     :param w: w[i, :] are the weights for the words in sentence i
     :return: emb[i, :] are the weighted average vector for sentence i
     """
-    n_samples = x.shape[0]
+    n_samples = len(x)
     emb = np.zeros((n_samples, model.wv.vector_size))
     for i in range(n_samples):
         v = []
-        for w in x[i,:]:
-            v.append(model.wv[w])
-        emb[i,:] = w[i,:].dot(np.array(v)) / np.count_nonzero(w[i,:])
+        for ws in x[i]:
+            v.append(model.wv[ws])
+        vm = np.array(v)
+        vm.resize((len(w[i,:]),vm.shape[1]),refcheck=False)
+        #vm = np.resize(vm,(len(w[i,:]),vm.shape[1]))
+        emb[i,:] = w[i,:].dot(vm) / np.count_nonzero(w[i,:])
     return emb
 
 def get_weighted_average(We, x, w):#改
@@ -31,6 +34,10 @@ def get_weighted_average(We, x, w):#改
     n_samples = x.shape[0]
     emb = np.zeros((n_samples, We.shape[1]))
     for i in range(n_samples):
+        ll = w[i,:]
+        ll2 = x[i,:]
+        ll3 =We[x[i,:],:]
+        n = np.count_nonzero(w[i,:])
         emb[i,:] = w[i,:].dot(We[x[i,:],:]) / np.count_nonzero(w[i,:])
     return emb
 
@@ -84,7 +91,7 @@ def SIF_embeddingFromModel(model, x, w, params):
     :param params.rmpc: if >0, remove the projections of the sentence embeddings to their first principal component
     :return: emb, emb[i, :] is the embedding for sentence i
     """
-    emb = get_weighted_average_from_model(We, x, w)
+    emb = get_weighted_average_from_model(model, x, w)
     if  params.rmpc > 0:
         emb = remove_pc(emb, params.rmpc)
     return emb

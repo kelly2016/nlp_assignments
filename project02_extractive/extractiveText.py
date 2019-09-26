@@ -21,7 +21,7 @@ analyzer = pyltpAnalyzer.PyltpAnalyzer()
 model = fastText.FastText.load(MODELFILE)
 # input
 wordfile = '/Users/henry/Documents/application/newsExtract/news/data/ltp_data/glove.840B.300d.txt' # word vector file, can be downloaded from GloVe website; it's quite large but you can truncate it and use only say the top 50000 word vectors to save time
-weightfile = '/Users/henry/Documents/application/newsExtract/news/data/ltp_data/enwiki_vocab_min200.txt' # each line is a word and its frequency
+weightfile = '/Users/henry/Documents/application/newsExtract/news/data/ltp_data/zhwiki_vocab_fre.txt' # each line is a word and its frequency
 weightpara = 1e-3 # the parameter in the SIF weighting scheme, usually in the range [3e-5, 3e-3]
 rmpc = 1 # number of principal components to remove in SIF weighting scheme
 
@@ -89,6 +89,7 @@ def getSentencesEmbeddings(sentences):
 
     return embeddings
 
+
 def getSentencesEmbeddings2(sentences):
     """
     获取句子向量
@@ -146,8 +147,8 @@ def preproccessSentences(sentences):
     newSentences = []
     if sentences is not None:
         for sentence in sentences:
-            #words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
-            words = jieba.cut(re.sub(PUNCTUATION_PATTERN, ' ', sentence), cut_all=False)
+            words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
+            #words = jieba.cut(re.sub(PUNCTUATION_PATTERN, ' ', sentence), cut_all=False)
             newSentences.append(' '.join(words))
     return newSentences
 

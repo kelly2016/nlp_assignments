@@ -5,7 +5,7 @@
 # @File    : wordsTask.py
 # @Description:用faskText 生成词向量c词频文件
 
-
+import setproctitle
 import multiprocessing
 import os
 from gensim.models import FastText
@@ -25,13 +25,23 @@ def train(corpusFile,modelFile,vectorFile):
     :param vectorFile: 保存的词量文件地址
     :return:
     """
+    sentences = []
+    with open(corpusFile) as f:
+        sentences = f.readlines()
     model = FastText( min_count=1)  # instantiate
+    #云服务器的老版本
+    model.build_vocab(sentences=sentences)  # scan over corpus to build the vocabulary
+    model.train(sentences, total_examples=model.corpus_count, epochs=model.epochs,workers=multiprocessing.cpu_count())
+    '''
     model.build_vocab(corpus_file=corpusFile)  # scan over corpus to build the vocabulary
     total_words = model.corpus_total_words  # number of words in the corpus
     model.train(corpus_file=corpusFile, total_words=total_words, epochs=5,workers=multiprocessing.cpu_count())
+    '''
+    print('training finished  ' )
     fname = get_tmpfile(modelFile)
     model.save(fname)
     model.wv.save_word2vec_format(vectorFile, binary=False)
+    print('training finished the modelFile = {} and the vectorFile = {} '.format(modelFile, vectorFile))
     return modelFile,vectorFile
 
 def retrain(corpusFile,modelFile,vectorFile):
@@ -147,11 +157,11 @@ def fastTextNgramsVector(fasttext_model):
 '''
 
 if __name__=='__main__':
-
+    setproctitle.setproctitle('newrun')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
     modelFile = dir + 'fasttext.model'
-    train(corpusFile=dir+'wiki_corpus_ltp',modelFile=modelFile , vectorFile=dir+'fasttext.v')
+    train(corpusFile=dir+'wiki_corpus_ltp',modelFile=modelFile , vectorFile=dir+'fasttext2.v')
     #retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
     #fastTextTest(modelFile)

@@ -62,6 +62,23 @@ def getDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/d
         print('labelsSet', labelsSet)
     return (train_dataset, train_labels), (valid_dataset, valid_labels), (test_dataset, test_labels),labelsSet
 
+def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/data/word2vect/s2v_w2v.pickle'):
+    with open(pickle_file, 'rb') as f:
+        save = pickle.load(MacOSFile(f))
+        train_dataset = save['train_dataset']
+        train_labels = save['train_labels']
+        valid_dataset = save['valid_dataset']
+        valid_labels = save['valid_labels']
+        test_dataset = save['test_dataset']
+        test_labels = save['test_labels']
+        labelsSet = save['labelsSet']
+        del save  # hint to help gc free up memory
+        print('Training set', train_dataset.shape, train_labels.shape)
+        print('Validation set', valid_dataset.shape, valid_labels.shape)
+        print('Test set', test_dataset.shape, test_labels.shape)
+        print('labelsSet', labelsSet)
+    return (train_dataset, train_labels), (valid_dataset, valid_labels), (test_dataset, test_labels),labelsSet
+
 def saveRawDataset(contentColumns, labelColumn,pickle_dir, input_file):
     """
 
@@ -104,7 +121,8 @@ def saveRawDataset(contentColumns, labelColumn,pickle_dir, input_file):
             'test_labels': test_labels,
             'labelsSet': labelsSet
         }
-        pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+        pickle_dump(save, f)
+        #pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
         f.close()
     except Exception as e:
         print('Unable to save data to', pickle_file, ':', e)
@@ -181,6 +199,7 @@ def saveDataset(contentColumns,labelColumn,pickle_dir,input_file):
             'labelsSet': labelsSet
         }
         pickle.dump(save, f, pickle.HIGHEST_PROTOCOL)
+
         f.close()
     except Exception as e:
         print('Unable to save data to', pickle_file, ':', e)
@@ -347,6 +366,45 @@ p = r'\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|（|）|＊|＋|
 def strQ2B(ustring):
     return [re.sub(p, ' ', ustring)] #re.split(p,ustring)#
 
+class MacOSFile(object):
+
+    def __init__(self, f):
+        self.f = f
+
+    def __getattr__(self, item):
+        return getattr(self.f, item)
+
+    def read(self, n):
+        # print("reading total_bytes=%s" % n, flush=True)
+        if n >= (1 << 31):
+            buffer = bytearray(n)
+            idx = 0
+            while idx < n:
+                batch_size = min(n - idx, 1 << 31 - 1)
+                # print("reading bytes [%s,%s)..." % (idx, idx + batch_size), end="", flush=True)
+                buffer[idx:idx + batch_size] = self.f.read(batch_size)
+                # print("done.", flush=True)
+                idx += batch_size
+            return buffer
+        return self.f.read(n)
+
+    def write(self, buffer):
+        n = len(buffer)
+        print("writing total_bytes=%s..." % n, flush=True)
+        idx = 0
+        while idx < n:
+            batch_size = min(n - idx, 1 << 31 - 1)
+            print("writing bytes [%s, %s)... " % (idx, idx + batch_size), end="", flush=True)
+            self.f.write(buffer[idx:idx + batch_size])
+            print("done.", flush=True)
+            idx += batch_size
+
+
+def pickle_dump(obj, file_path):
+    return pickle.dump(obj, MacOSFile(file_path), protocol=pickle.HIGHEST_PROTOCOL)
+
+def pickle_load(file_path):
+    return pickle.load(MacOSFile(file_path))
 
 if __name__ == '__main__':
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
@@ -354,7 +412,7 @@ if __name__ == '__main__':
     saveRawDataset(contentColumns=['comment', 'name'], labelColumn='star', pickle_dir=dir,
                 input_file=dir + 'movie_comments.csv')
     (train_dataset, train_labels), (valid_dataset, valid_labels), (
-        test_dataset, test_labels), labelsSet = getDataSet(dir+'s2v_w2v_raw.pickle')
+        test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw.pickle')
     end = 0
     #saveDataset(contentColumns= ['comment','name'], labelColumn= 'star', pickle_dir=dir,input_file=dir+'movie_comments.csv')
     #(train_dataset, train_labels), (valid_dataset, valid_labels), (

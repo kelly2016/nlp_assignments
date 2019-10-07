@@ -32,7 +32,7 @@ dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'da
 #EMBEDDING_FILE = '/Users/henry/Documents/application/nlp_assignments／data/fasttext-crawl-300d-2m/crawl-300d-2M.vec'
 
 (train_dataset, train_labels), (valid_dataset, valid_labels), (
-        test_dataset, test_labels), labelsSet = preprocessing.getDataSet(dir+'s2v_w2v_raw.pickle')
+        test_dataset, test_labels), labelsSet = preprocessing.getRawDataSet(dir+'s2v_w2v_raw.pickle')
 
 #train = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/train.csv')
     #(dir+'movie_comments.csv')

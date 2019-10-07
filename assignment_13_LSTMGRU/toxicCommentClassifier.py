@@ -6,7 +6,7 @@
 # @Description:
 
 import numpy as np
-import  preprocessing
+#import  preprocessing
 np.random.seed(42)
 import pandas as pd
 
@@ -18,8 +18,9 @@ from keras.layers import Input, Dense, Embedding, SpatialDropout1D, concatenate
 from keras.layers import GRU, Bidirectional, GlobalAveragePooling1D, GlobalMaxPooling1D
 from keras.preprocessing import text, sequence
 from keras.callbacks import Callback
-
+from gensim.models import FastText
 import warnings
+import  pickle
 
 warnings.filterwarnings('ignore')
 
@@ -27,12 +28,30 @@ import os
 #设置系统环境变量程序执行的线程
 os.environ['OMP_NUM_THREADS'] = '2'
 dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
-
+MODELFILE = dir+'/fasttext_ltp.model'
+print('MODELFILE = ',MODELFILE)
+model = FastText.load(MODELFILE)
 
 #EMBEDDING_FILE = '/Users/henry/Documents/application/nlp_assignments／data/fasttext-crawl-300d-2m/crawl-300d-2M.vec'
+def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/data/word2vect/s2v_w2v.pickle'):
+    with open(pickle_file, 'rb') as f:
+        save = pickle.load(MacOSFile(f))
+        train_dataset = save['train_dataset']
+        train_labels = save['train_labels']
+        valid_dataset = save['valid_dataset']
+        valid_labels = save['valid_labels']
+        test_dataset = save['test_dataset']
+        test_labels = save['test_labels']
+        labelsSet = save['labelsSet']
+        del save  # hint to help gc free up memory
+        print('Training set', train_dataset.shape, train_labels.shape)
+        print('Validation set', valid_dataset.shape, valid_labels.shape)
+        print('Test set', test_dataset.shape, test_labels.shape)
+        print('labelsSet', labelsSet)
+    return (train_dataset, train_labels), (valid_dataset, valid_labels), (test_dataset, test_labels),labelsSet
 
 (train_dataset, train_labels), (valid_dataset, valid_labels), (
-        test_dataset, test_labels), labelsSet = preprocessing.getRawDataSet(dir+'s2v_w2v_raw.pickle')
+        test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw_ltp.pickle')
 
 #train = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/train.csv')
     #(dir+'movie_comments.csv')
@@ -73,7 +92,7 @@ nb_words = min(max_features, len(word_index))
 embedding_matrix = np.zeros((nb_words, embed_size))
 for word, i in word_index.items():
     if i >= max_features: continue
-    embedding_vector = preprocessing.s2v_w2v.getW2V(word)#embeddings_index.get(word)
+    embedding_vector = model.wv[word]#preprocessing.s2v_w2v.getW2V(word)#embeddings_index.get(word)
     if embedding_vector is not None: embedding_matrix[i] = embedding_vector
 
 
@@ -111,6 +130,38 @@ def get_model():
     return model
 
 
+class MacOSFile(object):
+
+    def __init__(self, f):
+        self.f = f
+
+    def __getattr__(self, item):
+        return getattr(self.f, item)
+
+    def read(self, n):
+        # print("reading total_bytes=%s" % n, flush=True)
+        if n >= (1 << 31):
+            buffer = bytearray(n)
+            idx = 0
+            while idx < n:
+                batch_size = min(n - idx, 1 << 31 - 1)
+                # print("reading bytes [%s,%s)..." % (idx, idx + batch_size), end="", flush=True)
+                buffer[idx:idx + batch_size] = self.f.read(batch_size)
+                # print("done.", flush=True)
+                idx += batch_size
+            return buffer
+        return self.f.read(n)
+
+    def write(self, buffer):
+        n = len(buffer)
+        print("writing total_bytes=%s..." % n, flush=True)
+        idx = 0
+        while idx < n:
+            batch_size = min(n - idx, 1 << 31 - 1)
+            print("writing bytes [%s, %s)... " % (idx, idx + batch_size), end="", flush=True)
+            self.f.write(buffer[idx:idx + batch_size])
+            print("done.", flush=True)
+            idx += batch_size
 
 
 model = get_model()

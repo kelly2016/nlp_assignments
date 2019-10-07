@@ -14,10 +14,14 @@ import  re
 import pickle
 import numpy as np
 from gensim.models import Word2Vec
+import pyltpAnalyzer
+
 TRAIN_NUM = 0.8#训练集
 DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep+'word2vect'+ os.sep
 fearture_num = 100
 labelnum = 5
+analyzer = pyltpAnalyzer.PyltpAnalyzer()
+
 class W2V(object):
     """
     利用word2Vector产生句向量
@@ -34,6 +38,7 @@ class W2V(object):
                    """
 
         # words = [k for k in jieba.cut(sentence) if k not in stopword_list]
+        words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
         words = cut2list(sentence)
         sen_vec = np.sum([self.model.wv[k] for k in words if k in self.model], axis=0) / len(words)
 
@@ -338,6 +343,27 @@ def cut2list(string):
                 tokens.append(word)
     return tokens
 
+def cut2list_ltp(string):
+    """
+    返回list
+    :param string:
+    :return:
+    """
+    # 获取停用词表
+    stopwords = get_stopwords()
+    tokens = []
+    sens = strQ2B(string)
+    for sen in sens:
+        # 使用jieba进行分词
+        #words = jieba.cut(sen, cut_all=False)
+        words = analyzer.segmentSentence(sen)
+        for word in words:
+            if word not in stopwords:
+                tokens.append(word)
+    return tokens
+
+
+
 def tokenizeFormCsv( input_file, columns,save_file_path):
     """Reads a tab separated value file."""
     # 写文件
@@ -412,7 +438,7 @@ if __name__ == '__main__':
     saveRawDataset(contentColumns=['comment', 'name'], labelColumn='star', pickle_dir=dir,
                 input_file=dir + 'movie_comments.csv')
     (train_dataset, train_labels), (valid_dataset, valid_labels), (
-        test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw.pickle')
+        test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw_ltp.pickle')
     end = 0
     #saveDataset(contentColumns= ['comment','name'], labelColumn= 'star', pickle_dir=dir,input_file=dir+'movie_comments.csv')
     #(train_dataset, train_labels), (valid_dataset, valid_labels), (

@@ -67,7 +67,7 @@ def getDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/d
         print('labelsSet', labelsSet)
     return (train_dataset, train_labels), (valid_dataset, valid_labels), (test_dataset, test_labels),labelsSet
 
-def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/data/word2vect/s2v_w2v.pickle'):
+def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/data/word2vect/s2v_w2v_.pickle'):
     with open(pickle_file, 'rb') as f:
         save = pickle.load(MacOSFile(f))
         train_dataset = save['train_dataset']
@@ -110,7 +110,7 @@ def saveRawDataset(contentColumns, labelColumn,pickle_dir, input_file):
     test_labels = datalabels[validMaxIndex:]
 
     print('dataset_num = {},trainMaxIndex = {} ,validMaxIndex = {} '.format(dataset_num, trainMaxIndex, validMaxIndex))
-    pickle_file = os.path.join(pickle_dir, 's2v_w2v_raw.pickle')
+    pickle_file = os.path.join(pickle_dir, 's2v_w2v_raw_ltp.pickle')
 
     try:
         f = open(pickle_file, 'wb')
@@ -435,8 +435,8 @@ def pickle_load(file_path):
 if __name__ == '__main__':
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
     print('dir = ', dir)
-    saveRawDataset(contentColumns=['comment', 'name'], labelColumn='star', pickle_dir=dir,
-                input_file=dir + 'movie_comments.csv')
+    #saveRawDataset(contentColumns=['comment', 'name'], labelColumn='star', pickle_dir=dir,
+     #           input_file=dir + 'movie_comments.csv')
     (train_dataset, train_labels), (valid_dataset, valid_labels), (
         test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw_ltp.pickle')
     end = 0

@@ -31,7 +31,7 @@ os.environ['OMP_NUM_THREADS'] = '2'
 dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
 MODELFILE = dir+'/fasttext_ltp.model'
 print('MODELFILE = ',MODELFILE)
-#modelf = FastText.load(MODELFILE)
+modelf = FastText.load(MODELFILE)
 class MacOSFile(object):
 
     def __init__(self, f):
@@ -86,13 +86,13 @@ def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignment
 (train_dataset, train_labels), (valid_dataset, valid_labels), (
         test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw_ltp.pickle')
 
-train = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/train.csv')
+#train = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/train.csv')
     #(dir+'movie_comments.csv')
-test = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/test.csv')
+#test = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/test.csv')
 submission = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/sample_submission.csv')
 
-X_train = train["comment_text"].fillna("fillna").values#train_dataset #
-y_train = train[["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]].values#train_labels #
+X_train = train_dataset #train["comment_text"].fillna("fillna").values
+y_train = train_labels #train[["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]].values#t
 X_valid = valid_dataset
 y_valid = valid_labels
 X_test = test_dataset #test["comment_text"].fillna("fillna").values

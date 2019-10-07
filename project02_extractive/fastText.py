@@ -25,21 +25,34 @@ def train(corpusFile,modelFile,vectorFile):
     :param vectorFile: 保存的词量文件地址
     :return:
     """
+    '''
     sentences = []
-    with open(corpusFile) as f:
-        lines = f.readlines()
-        for line in lines:
-            sentences += [line.split()]
+    with open(corpusFile, encoding="UTF-8") as f:
+        line = f.readline()  # str类型
+        while line:
+            try:
+
+                sentences += [line.split()]
+                line = f.readline()  # str类型
+            except Exception as err:
+                raise (err)
+                line = '#'
+     '''
+
+    print('initial training   ')
     model = FastText( min_count=1)  # instantiate
     #云服务器的老版本
-
+    print('start  build_vocab  ')
+    '''
     model.build_vocab(sentences=sentences)  # scan over corpus to build the vocabulary
+    print('start training   ')
     model.train(sentences, total_examples=len(sentences), epochs=10,workers=multiprocessing.cpu_count())
     '''
     model.build_vocab(corpus_file=corpusFile)  # scan over corpus to build the vocabulary
     total_words = model.corpus_total_words  # number of words in the corpus
-    model.train(corpus_file=corpusFile, total_words=total_words, epochs=5,workers=multiprocessing.cpu_count())
-    '''
+    print('start training   ')
+    model.train(corpus_file=corpusFile, total_words=total_words, epochs=10,workers=multiprocessing.cpu_count())
+
     print('training finished  ' )
     fname = get_tmpfile(modelFile)
     model.save(fname)
@@ -163,8 +176,10 @@ if __name__=='__main__':
     setproctitle.setproctitle('newrun')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
-    modelFile = dir +'fasttext.model'#
-    train(corpusFile=dir+'wiki_corpus_ltp',modelFile=modelFile , vectorFile=dir+'fasttext.v')#
+    modelFile = dir +'fasttext_jieba.model'#
+    train(corpusFile=dir+'wiki_corpus_jieba',modelFile=modelFile , vectorFile=dir+'fasttext_jieba.v')#
+    #modelFile = dir + 'fasttext_ltp.model'  #
+    #train(corpusFile=dir + 'wiki_corpus_ltp', modelFile=modelFile, vectorFile=dir + 'fasttext_ltp.v')  #
     #modelFile = 'fasttext.model'  #
     #train(corpusFile= 'test', modelFile=modelFile, vectorFile= 'fl.v')  #
     #retrain(dir + 'zh_wiki_corpus01', modelFile, dir + 'w2v.v')

@@ -14,17 +14,26 @@ def saveWeightfile(file,srcFile):
     :return:
     """
     wordMap = {}
-    with open(srcFile) as f:
+    with open(srcFile, encoding="UTF-8") as f:
         line = f.readline()  # str类型
         while line:
-            print('line= ', line)
-            words = line.strip().split()
-            for w in words:
-                if w in wordMap:
-                    wordMap[w] = (wordMap[w]+1)
-                else:
-                    wordMap[w] = 1
-            line = f.readline()  # str类型
+            try:
+
+                #print('line= ', line)
+                words = line.strip().split()
+                for w in words:
+                    if w in wordMap:
+                        wordMap[w] = (wordMap[w]+1)
+                    else:
+                        wordMap[w] = 1
+                line = f.readline()  # str类型
+            except Exception as err:
+                print(err)
+                line = '#'
+            except UnicodeDecodeError as err:
+                print (err)
+                line = '#'
+
 
     print('statistic over ',len(wordMap))
     output = open(file, "w+", encoding="utf-8")
@@ -43,4 +52,5 @@ if __name__ == '__main__':
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
     print('dir = ', dir)
 
-    saveWeightfile( dir+'zhwiki_vocab_fre_ltp2.txt',dir+'wiki_corpus_ltp')#
+    #saveWeightfile( dir+'zhwiki_vocab_fre_ltp2.txt',dir+'wiki_corpus_ltp')#
+    saveWeightfile(dir + 'zhwiki_vocab_fre_jieba.txt', dir + '4wiki_corpus_jieba')

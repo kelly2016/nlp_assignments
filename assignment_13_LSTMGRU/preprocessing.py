@@ -100,6 +100,16 @@ def saveRawDataset(contentColumns, labelColumn,pickle_dir, input_file):
     np.random.shuffle(indexArray)
     trainMaxIndex = int(dataset_num * 0.8)
     validMaxIndex = trainMaxIndex + (dataset_num - trainMaxIndex) // 2
+    train_dataset = np.ndarray(trainMaxIndex+1,dtype = np.object )
+    train_labels = np.zeros((trainMaxIndex+1, labelnum),dtype = 'int64')
+
+    valid_dataset =  np.ndarray(validMaxIndex-trainMaxIndex,dtype = np.object)
+    valid_labels = np.zeros((validMaxIndex-trainMaxIndex, labelnum),dtype = 'int64')
+
+    test_dataset =  np.ndarray(dataset_num-validMaxIndex,dtype = np.object)
+    test_labels =  np.zeros((dataset_num-validMaxIndex, labelnum),dtype = 'int64')
+
+    '''
     train_dataset = datasets[:trainMaxIndex + 1]
     train_labels = datalabels[:trainMaxIndex + 1]
 
@@ -108,8 +118,31 @@ def saveRawDataset(contentColumns, labelColumn,pickle_dir, input_file):
 
     test_dataset = datasets[validMaxIndex:]
     test_labels = datalabels[validMaxIndex:]
-
+    '''
     print('dataset_num = {},trainMaxIndex = {} ,validMaxIndex = {} '.format(dataset_num, trainMaxIndex, validMaxIndex))
+    trainIndex = 0
+    valiIndex = 0
+    testIndex = 0
+    for i, v in enumerate(indexArray):
+        if i <= trainMaxIndex:
+            #train_dataset.append (datasets[v])
+            #train_labels.append(datalabels[v])
+            train_dataset[trainIndex] = datasets[v]
+            train_labels[trainIndex] = datalabels[v]
+            trainIndex += 1
+        elif i > trainMaxIndex and i <= validMaxIndex:
+            #valid_dataset.append(datasets[v])
+            #valid_labels.append(datalabels[v])
+            valid_dataset[valiIndex] = datasets[v]
+            valid_labels[valiIndex] = datalabels[v]
+            valiIndex += 1
+        else:
+            #test_dataset.append(datasets[v])
+            #test_labels.append(datalabels[v])
+            test_dataset[testIndex] = datasets[v]
+            test_labels[testIndex] = datalabels[v]
+            testIndex += 1
+
     pickle_file = os.path.join(pickle_dir, 's2v_w2v_raw_ltp.pickle')
 
     try:
@@ -435,8 +468,8 @@ def pickle_load(file_path):
 if __name__ == '__main__':
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
     print('dir = ', dir)
-    #saveRawDataset(contentColumns=['comment', 'name'], labelColumn='star', pickle_dir=dir,
-     #           input_file=dir + 'movie_comments.csv')
+    saveRawDataset(contentColumns=['comment', 'name'], labelColumn='star', pickle_dir=dir,
+                input_file=dir + 'movie_comments.csv')
     (train_dataset, train_labels), (valid_dataset, valid_labels), (
         test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw_ltp.pickle')
     end = 0

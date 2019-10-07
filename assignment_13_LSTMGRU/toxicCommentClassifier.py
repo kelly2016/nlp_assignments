@@ -25,12 +25,45 @@ import  pickle
 warnings.filterwarnings('ignore')
 
 import os
+
 #设置系统环境变量程序执行的线程
 os.environ['OMP_NUM_THREADS'] = '2'
 dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
 MODELFILE = dir+'/fasttext_ltp.model'
 print('MODELFILE = ',MODELFILE)
-model = FastText.load(MODELFILE)
+#modelf = FastText.load(MODELFILE)
+class MacOSFile(object):
+
+    def __init__(self, f):
+        self.f = f
+
+    def __getattr__(self, item):
+        return getattr(self.f, item)
+
+    def read(self, n):
+        # print("reading total_bytes=%s" % n, flush=True)
+        if n >= (1 << 31):
+            buffer = bytearray(n)
+            idx = 0
+            while idx < n:
+                batch_size = min(n - idx, 1 << 31 - 1)
+                # print("reading bytes [%s,%s)..." % (idx, idx + batch_size), end="", flush=True)
+                buffer[idx:idx + batch_size] = self.f.read(batch_size)
+                # print("done.", flush=True)
+                idx += batch_size
+            return buffer
+        return self.f.read(n)
+
+    def write(self, buffer):
+        n = len(buffer)
+        print("writing total_bytes=%s..." % n, flush=True)
+        idx = 0
+        while idx < n:
+            batch_size = min(n - idx, 1 << 31 - 1)
+            print("writing bytes [%s, %s)... " % (idx, idx + batch_size), end="", flush=True)
+            self.f.write(buffer[idx:idx + batch_size])
+            print("done.", flush=True)
+            idx += batch_size
 
 #EMBEDDING_FILE = '/Users/henry/Documents/application/nlp_assignments／data/fasttext-crawl-300d-2m/crawl-300d-2M.vec'
 def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignments/data/word2vect/s2v_w2v.pickle'):
@@ -53,13 +86,13 @@ def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignment
 (train_dataset, train_labels), (valid_dataset, valid_labels), (
         test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw_ltp.pickle')
 
-#train = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/train.csv')
+train = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/train.csv')
     #(dir+'movie_comments.csv')
-#test = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/test.csv')
+test = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/test.csv')
 submission = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/sample_submission.csv')
 
-X_train = train_dataset #train["comment_text"].fillna("fillna").values
-y_train = train_labels #train[["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]].values
+X_train = train["comment_text"].fillna("fillna").values#train_dataset #
+y_train = train[["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]].values#train_labels #
 X_valid = valid_dataset
 y_valid = valid_labels
 X_test = test_dataset #test["comment_text"].fillna("fillna").values
@@ -92,7 +125,7 @@ nb_words = min(max_features, len(word_index))
 embedding_matrix = np.zeros((nb_words, embed_size))
 for word, i in word_index.items():
     if i >= max_features: continue
-    embedding_vector = model.wv[word]#preprocessing.s2v_w2v.getW2V(word)#embeddings_index.get(word)
+    embedding_vector = modelf.wv[word]#preprocessing.s2v_w2v.getW2V(word)#embeddings_index.get(word)
     if embedding_vector is not None: embedding_matrix[i] = embedding_vector
 
 
@@ -130,38 +163,6 @@ def get_model():
     return model
 
 
-class MacOSFile(object):
-
-    def __init__(self, f):
-        self.f = f
-
-    def __getattr__(self, item):
-        return getattr(self.f, item)
-
-    def read(self, n):
-        # print("reading total_bytes=%s" % n, flush=True)
-        if n >= (1 << 31):
-            buffer = bytearray(n)
-            idx = 0
-            while idx < n:
-                batch_size = min(n - idx, 1 << 31 - 1)
-                # print("reading bytes [%s,%s)..." % (idx, idx + batch_size), end="", flush=True)
-                buffer[idx:idx + batch_size] = self.f.read(batch_size)
-                # print("done.", flush=True)
-                idx += batch_size
-            return buffer
-        return self.f.read(n)
-
-    def write(self, buffer):
-        n = len(buffer)
-        print("writing total_bytes=%s..." % n, flush=True)
-        idx = 0
-        while idx < n:
-            batch_size = min(n - idx, 1 << 31 - 1)
-            print("writing bytes [%s, %s)... " % (idx, idx + batch_size), end="", flush=True)
-            self.f.write(buffer[idx:idx + batch_size])
-            print("done.", flush=True)
-            idx += batch_size
 
 
 model = get_model()

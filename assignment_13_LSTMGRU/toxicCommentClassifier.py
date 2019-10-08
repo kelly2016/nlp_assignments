@@ -89,17 +89,19 @@ def getRawDataSet(pickle_file='/Users/henry/Documents/application/nlp_assignment
 #train = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/train.csv')
     #(dir+'movie_comments.csv')
 #test = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/test.csv')
-submission = pd.read_csv('/Users/henry/Documents/application/nlp_assignments/data/jigsawtoxiccommentclassificationchallenge/sample_submission.csv')
+submission = pd.read_csv(dir+'sample_submission.csv')
 
 X_train = train_dataset #train["comment_text"].fillna("fillna").values
 y_train = train_labels #train[["toxic", "severe_toxic", "obscene", "threat", "insult", "identity_hate"]].values#t
 X_valid = valid_dataset
 y_valid = valid_labels
-X_test = test_dataset #test["comment_text"].fillna("fillna").values
-y_test = test_labels
+l = len(test_dataset)
+X_test = test_dataset[:l-2] #test["comment_text"].fillna("fillna").values
+y_test = test_labels[:l-2]
 max_features = 30000
-maxlen = 100
+maxlen = 1071
 embed_size = 100#300
+
 
 tokenizer = text.Tokenizer(num_words=max_features)
 #通过列表text来构建Tokenizer类生成词典
@@ -109,9 +111,10 @@ X_train = tokenizer.texts_to_sequences(X_train)
 X_valid = tokenizer.texts_to_sequences(X_valid)
 X_test = tokenizer.texts_to_sequences(X_test)
 #序列填充 将多个序列截断或补齐为相同长度 maxlen：None或整数，为序列的最大长度。大于此长度的序列将被截短，小于此长度的序列将在后部填0.
-x_train = sequence.pad_sequences(X_train)#, maxlen=maxlen
-x_valid = sequence.pad_sequences(X_valid)
-x_test = sequence.pad_sequences(X_test)#, maxlen=maxlen
+
+x_train = sequence.pad_sequences(X_train, maxlen=maxlen)#
+x_valid = sequence.pad_sequences(X_valid, maxlen=maxlen)
+x_test = sequence.pad_sequences(X_test, maxlen=maxlen)#
 
 #array和asarray都可将结构数据转换为ndarray类型。但是主要区别就是当数据源是ndarray时，array仍会copy出一个副本，占用新的内存，但asarray不会。
 def get_coefs(word, *arr): return word, np.asarray(arr, dtype='float32')
@@ -153,7 +156,7 @@ def get_model():
     avg_pool = GlobalAveragePooling1D()(x)
     max_pool = GlobalMaxPooling1D()(x)
     conc = concatenate([avg_pool, max_pool])
-    outp = Dense(6, activation="sigmoid")(conc)
+    outp = Dense(5, activation="sigmoid")(conc)#softmax
 
     model = Model(inputs=inp, outputs=outp)
     model.compile(loss='binary_crossentropy',

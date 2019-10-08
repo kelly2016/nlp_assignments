@@ -38,7 +38,7 @@ class W2V(object):
                    """
 
         # words = [k for k in jieba.cut(sentence) if k not in stopword_list]
-        words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
+        #words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
         words = cut2list(sentence)
         sen_vec = np.sum([self.model.wv[k] for k in words if k in self.model], axis=0) / len(words)
 
@@ -106,8 +106,8 @@ def saveRawDataset(contentColumns, labelColumn,pickle_dir, input_file):
     valid_dataset =  np.ndarray(validMaxIndex-trainMaxIndex,dtype = np.object)
     valid_labels = np.zeros((validMaxIndex-trainMaxIndex, labelnum),dtype = 'int64')
 
-    test_dataset =  np.ndarray(dataset_num-validMaxIndex,dtype = np.object)
-    test_labels =  np.zeros((dataset_num-validMaxIndex, labelnum),dtype = 'int64')
+    test_dataset =  np.ndarray(dataset_num-validMaxIndex-1,dtype = np.object)
+    test_labels =  np.zeros((dataset_num-validMaxIndex-1, labelnum),dtype = 'int64')
 
     '''
     train_dataset = datasets[:trainMaxIndex + 1]
@@ -469,7 +469,7 @@ if __name__ == '__main__':
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
     print('dir = ', dir)
     saveRawDataset(contentColumns=['comment', 'name'], labelColumn='star', pickle_dir=dir,
-                input_file=dir + 'movie_comments.csv')
+               input_file=dir + 'movie_comments.csv')
     (train_dataset, train_labels), (valid_dataset, valid_labels), (
         test_dataset, test_labels), labelsSet = getRawDataSet(dir+'s2v_w2v_raw_ltp.pickle')
     end = 0

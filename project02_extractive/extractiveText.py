@@ -14,7 +14,7 @@ import fastText
 
 WORDFILE  =  ''# word vector file, can be downloaded from GloVe website; it's quite large but you can truncate it and use only say the top 50000 word vectors to save time
 WEIGHTFILE = ''# each line is a word and its frequency
-N = 2
+N = 6
 PUNCTUATION_PATTERN = r'\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|（|）|＊|＋|，|－|／|：|；|＜|＝|＞|＠|\［|\＼|\］|\＾|＿|｀|\～|｟|｠|\、|〃|》|「|」|『|』|【|】|〔|〕|〖|〗|〘|〙|〚|〛|〜|\〝|\〞|〟|〰|〾|〿|–—|\‘|\“|\„|\‟|\…|\‧|﹏|\.'
 MODELFILE = '/Users/henry/Documents/application/nlp_assignments/data/fasttext_ltp.model'
 analyzer = pyltpAnalyzer.PyltpAnalyzer()
@@ -67,7 +67,7 @@ def organize(scores,oriSentences):
     text = ''
     for score in scores:
         text += (oriSentences[score[1]]+'。')
-        print(text)
+    print('summary =',text)
     return text
 
 
@@ -150,7 +150,8 @@ def preproccessSentences(sentences):
         for sentence in sentences:
             words = analyzer.segmentSentence(re.sub(PUNCTUATION_PATTERN, ' ', sentence))
             #words = jieba.cut(re.sub(PUNCTUATION_PATTERN, ' ', sentence), cut_all=False)
-            newSentences += [words]
+            if words is not None and len(words) > 0:
+                newSentences += [words]
     return newSentences
 
 def preproccessSentences2(sentences):
@@ -177,13 +178,16 @@ def cosine_dis(vector1, vector2):
 
 if __name__=='__main__':
 
-    text ='近日，美国一项最新民调显示，支持弹劾美国总统特朗普的选民比例与上周末相比有所上升，目前支持和反对弹劾的选民人数基本持平。\
-当地时间9月24日，美国众议院议长南希·佩洛西宣布正式启动对美国总统特朗普的弹劾调查。此次弹劾调查的直接导火索是上周多家媒体报道的乌克兰“电话门”：据匿名的政府官员透露，特朗普在7月25日与乌克兰总统泽连斯基的通话中多次敦促乌克兰方面调查美国民主党总统参选人、前副总统拜登和他的儿子。25日，白宫公布了此次通话的文字记录。\
-据美国政治新闻网站Politico报道，Politico和美国晨间咨询公司（Morning Consult）联合开展了一项民意调查，从24日佩洛西宣布启动弹劾调查到26日晨间，共计调查了1640名登记选民对“国会是否应该启动弹劾程序”的态度。\
-调查结果显示，43%的选民认为国会应该启动弹劾程序，与反对弹劾的比例一致，另外还有13%的选民尚未做出决定。最新的民调结果中，支持弹劾的比例较上周末的36%上升了7个百分点。在民主党选民中，支持弹劾的比例由上次的66%增加到了现在的79%。\
-晨间咨询公司副总裁泰勒·辛克莱（Tyler Sinclair）说，非民主党选民中支持弹劾的比例也在上升。“随着举报人爆料的更多信息浮出水面，对弹劾的支持度已经达到了今年夏初以来的最高点，”他说，“本周的新闻使民主党的弹劾调查有了可信度，这对共和党人和无党派人士产生了重大影响。共和党选民对弹劾的支持率从上周的5%上升到目前的10%，而无党派人士的支持率达到了39%。”\
-不过Politico也在报道中指出，自24日晚间民调开始后，事件本身变化迅速：26日上午，国家情报局代理局长约瑟夫·马奎尔(Joseph Maguire)在众议院情报委员会作证。然而，本次民意调查几乎全部的采访都是在26日听证会之前进行的。\
-Politico报道称，针对此类快速变化事件开展的民调可能包含错误信息，比如过去的调查中就曾出现选民无视他们的支持者有负面新闻的情况。此外，一些选民可能也不熟悉“电话门”的最新进展。本次民意调查中，只有32%的受访选民表示，他们听说过“很多”关于特朗普要求高级政府官员停止向乌克兰提供军事援助的报道；另外34%的人表示，他们听说过“一些”关于乌克兰“电话门”的消息；还有34%的人表示，他们听说过关于“电话门”的消息并不多，或者干脆没听说过任何相关消息。'
-    #'凤凰展翅，逐梦蓝天。在新中国成立70周年之际，北京大兴国际机场投运仪式25日上午在北京举行。中共中央总书记、国家主席、中央军委主席习近平出席仪式，宣布机场正式投运并巡览航站楼，代表党中央向参与机场建设和运营的广大干部职工表示衷心的感谢、致以诚挚的问候。'
+    text = ''
+ #'凤凰展翅，逐梦蓝天。在新中国成立70周年之际，北京大兴国际机场投运仪式25日上午在北京举行。中共中央总书记、国家主席、中央军委主席习近平出席仪式，宣布机场正式投运并巡览航站楼，代表党中央向参与机场建设和运营的广大干部职工表示衷心的感谢、致以诚挚的问候。'
+    file = '/Users/henry/Desktop/testtext.txt'
+    with open(file, 'r',encoding="utf8") as f:
+        aa = f.readline()  # str类型
+        while aa:
+            text += aa.strip()
+            aa = f.readline()
+
+    print(text)
+
     extract(text)
 

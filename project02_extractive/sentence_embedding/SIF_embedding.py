@@ -13,11 +13,17 @@ def get_weighted_average_from_model(model, x, w):#改
     """
     n_samples = len(x)
     emb = np.zeros((n_samples, model.wv.vector_size))
+
     for i in range(n_samples):
         v = []
         for ws in x[i]:
             v.append(model.wv[ws])
         vm = np.array(v)
+        print('----------')
+        print('len.x[i]=', len(x[i]))
+        print('x[i]=', x[i])
+        print('vm.shape=',vm.shape)
+        print('len(w[i,:]=', len(w[i,:]))
         vm.resize((len(w[i,:]),vm.shape[1]),refcheck=False)
         #vm = np.resize(vm,(len(w[i,:]),vm.shape[1]))
         emb[i,:] = w[i,:].dot(vm) / np.count_nonzero(w[i,:])

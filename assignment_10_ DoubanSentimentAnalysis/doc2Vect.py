@@ -56,7 +56,7 @@ def test(file):
     return sims
 
 
-if __name__ == '__main__':
+.
     x_train = get_datasest()
     model_dm = train(x_train)
 

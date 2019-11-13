@@ -11,7 +11,7 @@ from enum import Enum
 import pyltpAnalyzer
 
 
-#标点符号
+#标点符号punctuation
 P = r'\||\[|\]|\r|\n|\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|（|）|＊|＋|，|－|／|：|；|＜|＝|＞|＠|\［|\＼|\］|\＾|＿|｀|\～|｟|｠|\、|〃|》|「|」|『|』|【|】|〔|〕|〖|〗|〘|〙|〚|〛|〜|\〝|\〞|〟|〰|〾|〿|–—|\‘|\“|\„|\‟|\…|\‧|﹏|\.'
 #分词起
 
@@ -24,7 +24,7 @@ class Analyzer(object):
     根据指定类型来创建分词器：目前是jieba和哈工大的分词器
     """
 
-    def __init__(self,type,useStopwords = False):
+    def __init__(self,type,replaceP=True,useStopwords = False):
         self.type = type
         if type ==Analyzer.ANALYZERS.Jieba:
             self.analyzer = jieba
@@ -32,6 +32,7 @@ class Analyzer(object):
             self.analyzer =pyltpAnalyzer.PyltpAnalyzer()
         #是否过停用词
         self.useStopwords = useStopwords
+        self.replaceP=replaceP#会否替换标点符号
 
     def cut(self,string):
         """
@@ -42,7 +43,11 @@ class Analyzer(object):
         # 获取停用词表
         stopwords = get_stopwords()
         article_contents = ''
-        sens = _split(string)
+        sens = ''
+        if self.replaceP == True:
+            sens = _split(string)
+        else:
+            sens = strQ2B(string)
         for sen in sens:
             if self.type == Analyzer.ANALYZERS.Jieba:
                 # 使用jieba进行分词
@@ -68,7 +73,10 @@ class Analyzer(object):
         # 获取停用词表
         stopwords = get_stopwords()
         tokens = []
-        sens = _split(string)
+        if self.replaceP == True:
+            sens = _split(string)
+        else:
+            sens = strQ2B(string)
         for sen in sens:
             if self.type == Analyzer.ANALYZERS.Jieba:
                 # 使用jieba进行分词
@@ -91,6 +99,22 @@ def _split(ustring):
     :return:
     """
     return [re.sub(P, ' ', ustring)] #re.split(p,ustring)#
+
+def strQ2B(ustring):
+    """把字符串全角转半角"""
+    ss = []
+    for s in ustring:
+        rstring = ""
+        for uchar in s:
+            inside_code = ord(uchar)
+            if inside_code == 12288:  # 全角空格直接转换
+                inside_code = 32
+            elif (inside_code >= 65281 and inside_code <= 65374):  # 全角字符（除空格）根据关系转化
+                inside_code -= 65248
+            rstring += chr(inside_code)
+        ss.append(rstring)
+    return ''.join(ss)
+
 
 @lru_cache(maxsize=2 ** 10)
 def get_stopwords(stopwordsFile = '/Users/henry/Documents/application/nlp_assignments/data/stopwords.txt'):

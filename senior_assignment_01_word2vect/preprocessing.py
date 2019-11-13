@@ -28,7 +28,7 @@ def preprocess(str):
     :param str:
     :return:
     """
-    return str.replace('[语音]','')
+    return str.replace('[语音]','').replace('\t','').replace('\n','').replace('|','。').replace('[图片]',' ').replace(',','，')
 
 def deal(src_file,output_file):
     """
@@ -54,6 +54,9 @@ def deal(src_file,output_file):
             output_line =''
 
             for (i, v) in enumerate(values):
+                if i == 0 :
+                    output_line = v
+                    continue
                 if j == 52:
                     bug = 0
                 if i  == 5 :
@@ -66,10 +69,8 @@ def deal(src_file,output_file):
                    line = ' '.join(words)
                 else:
                    line = ' '
-                if i < len(values) and i > 0:
-                   output_line =  output_line + ","+line
-                elif i == 0:
-                    output_line = line
+                output_line =  output_line + ","+line
+
             if len(values) == 5:
                 output_line + output_line+ ","+' '
 

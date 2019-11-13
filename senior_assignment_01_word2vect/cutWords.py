@@ -76,7 +76,7 @@ class Analyzer(object):
         if self.replaceP == True:
             sens = _split(string)
         else:
-            sens = strQ2B(string)
+            sens = [strB2Q(string)]
         for sen in sens:
             if self.type == Analyzer.ANALYZERS.Jieba:
                 # 使用jieba进行分词
@@ -115,6 +115,18 @@ def strQ2B(ustring):
         ss.append(rstring)
     return ''.join(ss)
 
+def strB2Q(ustring):
+    """半角转全角"""
+    rstring = ""
+    for uchar in ustring:
+        inside_code=ord(uchar)
+        if inside_code == 32:                                 #半角空格直接转化
+            inside_code = 12288
+        elif inside_code >= 32 and inside_code <= 126:        #半角字符（除空格）根据关系转化
+            inside_code += 65248
+
+        rstring += chr(inside_code)
+    return rstring
 
 @lru_cache(maxsize=2 ** 10)
 def get_stopwords(stopwordsFile = '/Users/henry/Documents/application/nlp_assignments/data/stopwords.txt'):

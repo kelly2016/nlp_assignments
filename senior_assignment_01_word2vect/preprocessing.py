@@ -19,8 +19,17 @@ import tensorflow as tf
 from collections import Counter
 from  cutWords import Analyzer
 
-analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,False)
+analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=False,useStopwords=False)
 counter = Counter()
+
+def preprocess(str):
+    """
+    和业务相关的字符串处理
+    :param str:
+    :return:
+    """
+    return str.replace('[语音]','')
+
 def deal(src_file,output_file):
     """
 
@@ -52,7 +61,7 @@ def deal(src_file,output_file):
                 line = ''
                 #print('j = {} ,i = {} , v= {}'.format(j,i,v))
                 if v is not None and type(v) == str and len(v) > 0:
-                   words = analyzer.cut2list(v)
+                   words = analyzer.cut2list(preprocess(v))
                    counter.update(words)
                    line = ' '.join(words)
                 else:

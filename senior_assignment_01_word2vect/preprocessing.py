@@ -81,9 +81,14 @@ def deal(src_file,output_file):
 
 def wirteDict(dictFile):
     f = open(dictFile, 'w')  # 若是'wb'就表示写二进制文件
-    for k, v in counter.items():
-        f.write('{} {} \n'.format(k,v))
-        print('{} {} \n'.format(k,v))
+    # 统计单词出现频次
+    total_count = len(counter.items())
+
+    # 计算单词频率
+    words = sorted(counter.items(), key=lambda x: x[1],reverse=True)
+    for k, v in words:
+        f.write('{} {} {}\n'.format(k,v,(v/total_count)))
+        print('{} {} {}\n'.format(k,v,(v/total_count)))
     f.close()
 
 

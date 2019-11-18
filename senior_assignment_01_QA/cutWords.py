@@ -17,6 +17,21 @@ P = r'\||\[|\]|\r|\n|\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|�
 
 
 
+@lru_cache(maxsize=2 ** 10)
+def get_stopwords(stopwordsFile = '/Users/henry/Documents/application/nlp_assignments/data/stopwords.txt'):
+    print("start load stopwords")
+    logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=logging.INFO)
+    # 加载停用词表
+    stopword_set = set()
+    if(os.path.exists(stopwordsFile)):
+        stopword_list = [k.strip() for k in open(stopwordsFile, encoding='utf8').readlines() if k.strip() != '']
+        stopword_set = set(stopword_list)
+    print("end load stopwords")
+    return stopword_set
+
+# 获取停用词表
+stopwords = get_stopwords()
+
 
 class Analyzer(object):
     ANALYZERS = Enum('Analyzer', ('Jieba', 'LTP'))
@@ -24,12 +39,18 @@ class Analyzer(object):
     根据指定类型来创建分词器：目前是jieba和哈工大的分词器
     """
 
-    def __init__(self,type,replaceP=True,useStopwords = False):
+    def __init__(self,type,replaceP=True,useStopwords = False,userdict = None):
         self.type = type
         if type ==Analyzer.ANALYZERS.Jieba:
             self.analyzer = jieba
+            if userdict is not None:
+                self.analyzer.load_userdict(userdict)
         elif type ==Analyzer.ANALYZERS.LTP:
             self.analyzer =pyltpAnalyzer.PyltpAnalyzer()
+            if userdict is not None:
+                self.analyzer.loadSegmentorUserdict(userdict)
+
+
         #是否过停用词
         self.useStopwords = useStopwords
         self.replaceP=replaceP#会否替换标点符号
@@ -40,12 +61,11 @@ class Analyzer(object):
         :param string:
         :return: 返回格式是字符串
         """
-        # 获取停用词表
-        stopwords = get_stopwords()
+
         article_contents = ''
         sens = ''
         if self.replaceP == True:
-            sens = _split(string)
+            sens = split(string)
         else:
             sens = strQ2B(string)
         for sen in sens:
@@ -70,11 +90,10 @@ class Analyzer(object):
         :param string:
         :return:
         """
-        # 获取停用词表
-        stopwords = get_stopwords()
+
         tokens = []
         if self.replaceP == True:
-            sens = _split(string)
+            sens = split(string)
         else:
             sens = [strB2Q(string)]
         for sen in sens:
@@ -92,7 +111,7 @@ class Analyzer(object):
                 tokens += words
         return tokens
 
-def _split(ustring):
+def split(ustring):
     """
     用标点符号分句
     :param ustring:
@@ -128,23 +147,9 @@ def strB2Q(ustring):
         rstring += chr(inside_code)
     return rstring
 
-@lru_cache(maxsize=2 ** 10)
-def get_stopwords(stopwordsFile = '/Users/henry/Documents/application/nlp_assignments/data/stopwords.txt'):
-    print("start load stopwords")
-    logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=logging.INFO)
-    # 加载停用词表
-    stopword_set = set()
-    if(os.path.exists(stopwordsFile)):
-        stopword_list = [k.strip() for k in open(stopwordsFile, encoding='utf8').readlines() if k.strip() != '']
-        stopword_set = set(stopword_list)
-    print("end load stopwords")
-    return stopword_set
-
-
-
 
 
 if __name__ == '__main__':
-    analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,True)
-    print(analyzer.cut('当我们需要定义常量时\r，一个方法是用大写变量通过整数来定义，例如月份'))
-    print(analyzer.cut2list('当我们需要定义常量时，一个方法是用大写变量通过整数来定义，例如月份'))
+    analyzer = Analyzer(Analyzer.ANALYZERS.LTP,False,False)
+    print(analyzer.cut('  '))
+    print(analyzer.cut2list(' '))

@@ -311,6 +311,14 @@ class PyltpAnalyzer(object):
         self.parser = Parser() # 初始化实例
         self.parser.load(self.par_model_path)  # 加载模型
 
+    def loadSegmentorUserdict(self,user_dict):
+        """
+        载入用户分词词典
+        :param user_dict:
+        :return:
+        """
+        self.segmentor.load_with_lexicon(self.cws_model_path, user_dict)
+
     def segmentSentence(self, sentence):
         return list(self.segmentor.segment(sentence))
 

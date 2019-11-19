@@ -182,7 +182,7 @@ if __name__=='__main__':
     #train(corpusFile=dir + 'wiki_corpus_ltp', modelFile=modelFile, vectorFile=dir + 'fasttext_ltp.v')  #
     #modelFile = 'fasttext.model'  #
     #train(corpusFile= 'test', modelFile=modelFile, vectorFile= 'fl.v')  #
-    retrain(dir + 'trainv2wcotpus_ltp.csv', modelFile, dir + 'w2v_ltp.v')
+    retrain(dir + 'AutoMaster/trainv2wcotpus_ltp.csv', modelFile, dir + 'fasttext_ltp.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
     fastTextTest(modelFile)
     #view(modelFile)

@@ -140,11 +140,19 @@ def deal(src_file,output_file):
 '''
 
 
-def wirteDict(dictFile):
-    src_df = pd.read_csv(src_file, encoding='utf-8',  sep=None)
+def wirteDict(src_file,dictFile):
+    #src_df = pd.read_csv(src_file, encoding='utf-8',  sep=None,error_bad_lines=False)
+    fo = open(src_file, "r+")
     words = []
-    for value in src_df['merged']:
-        words += value.split(' ')
+    try:
+        while True:
+            text_line = fo.readline()
+            if text_line:
+                words += text_line.split(' ')
+            else:
+              break
+    finally:
+        fo.close()
 
     counter = Counter(words)
     f = open(dictFile, 'w')  # 若是'wb'就表示写二进制文件
@@ -179,20 +187,25 @@ def createUserDict(src_file,output_file):
     output.close()
 
 
+def process(series):
+    return series['Question'] +' '+series['Dialogue']+' '+series['Dialogue']
+
+
 def createEmbeddingCorpus(src_file,src_file2,output_file):
     """
     把csv专成txt
     :return:
     """
     src_df = pd.read_csv(src_file, encoding='utf-8', sep=None)
-    src_df['merged'] = src_df[[ 'Question', 'Dialogue','Report']].apply(lambda x: ' '.join(x),axis=1)
-
+    src_df['merged'] = src_df[[ 'Question', 'Dialogue','Report']].apply( process,axis=1)#
 
     src_df2 = pd.read_csv(src_file2, encoding='utf-8',   sep=None)
-    src_df2['merged'] = src_df[[ 'Question', 'Dialogue']].apply(lambda x: ' '.join(x),axis=1)
+    src_df2['merged'] = src_df[[ 'Question', 'Dialogue']].apply(process,axis=1)
 
     merged_df = pd.concat([src_df[['merged']],src_df2[['merged']]],axis=0)
     merged_df.to_csv(output_file,index=None,header = False)
+    print('train data size {},test data size {},merged_df data size {}'.format(len(src_df), len(src_df2),
+                                                                               len(merged_df)))
 
 
 
@@ -212,18 +225,18 @@ if __name__ == '__main__':
 
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet.csv'
     output_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet_cleared.csv'
-    #deal2(src_file, output_file)
+    deal2(src_file, output_file)
 
     src_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet.csv'
     output_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet_cleared.csv'
-    #deal2(src_file2, output_file2)
+    deal2(src_file2, output_file2)
 
 
     #生成训练v2w的语料
     output_file3 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/trainv2wcotpus_ltp.csv'
-    createEmbeddingCorpus(output_file, output_file, output_file3)
+    createEmbeddingCorpus(output_file, output_file2, output_file3)
 
     #生成字典
     dictFile = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_Counter.txt'
-    wirteDict(dictFile)
+    wirteDict(output_file3,dictFile)
 

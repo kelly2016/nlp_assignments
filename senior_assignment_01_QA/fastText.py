@@ -176,13 +176,13 @@ if __name__=='__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
-    #modelFile = dir +'fasttext_jieba.model'#
-    #train(corpusFile=dir+'wiki_corpus_jieba',modelFile=modelFile , vectorFile=dir+'fasttext_jieba.v')#
-    modelFile = dir + 'fasttext_ltp.model'  #
+    modelFile = dir +'fasttext_jieba.model'#
+    train(corpusFile=dir+'AutoMaster/trainv2wcotpus_jieba.csv',modelFile=modelFile , vectorFile=dir+'AutoMasterfasttext_jieba.v')#
+    #modelFile = dir + 'fasttext_ltp.model'  #
     #train(corpusFile=dir + 'wiki_corpus_ltp', modelFile=modelFile, vectorFile=dir + 'fasttext_ltp.v')  #
     #modelFile = 'fasttext.model'  #
     #train(corpusFile= 'test', modelFile=modelFile, vectorFile= 'fl.v')  #
-    retrain(dir + 'AutoMaster/trainv2wcotpus_ltp.csv', modelFile, dir + 'AutoMaster/fasttext_ltp.v')
+    #retrain(dir + 'AutoMaster/trainv2wcotpus_ltp.csv', modelFile, dir + 'AutoMaster/fasttext_ltp.v')
     #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
     fastTextTest(modelFile)
     #view(modelFile)

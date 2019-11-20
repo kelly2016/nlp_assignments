@@ -21,7 +21,7 @@ from  cutWords import Analyzer
 import cutWords
 import multiprocessing
 
-analyzer = Analyzer(Analyzer.ANALYZERS.LTP,replaceP=False,useStopwords=False,userdict ='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
+analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=False,useStopwords=False,userdict ='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
 
 cores = multiprocessing.cpu_count()
 partitions = cores
@@ -35,8 +35,7 @@ def preprocess(string):
     """
     if string is  None or  type(string) != str or len(string) == 0:
         return ' '
-
-    words = analyzer.cut2list(string.replace('[语音]','').replace('\t','').replace('\n','').replace('|','。').replace('[图片]',' ').replace(',','，').replace('。',' 。 '))#。这么做是因为ltp的切词好怪异"。德尔福"在一起
+    words = analyzer.cut2list(string.replace('[语音]','').replace('\t','').replace('\n','').replace('|','。').replace('[图片]',' ').replace(',','，'))#。这么做是因为ltp的切词好怪异"。德尔福"在一起
     return ' '.join(words)
 
 def data_fram_proc(df):
@@ -221,6 +220,7 @@ def createEmbeddingCorpus(src_file,src_file2,output_file):
 
 
 if __name__ == '__main__':
+
     '''
     #创建专业词表
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet.csv'
@@ -235,15 +235,15 @@ if __name__ == '__main__':
 
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet.csv'
     output_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet_cleared.csv'
-    #deal2(src_file, output_file)
+    deal2(src_file, output_file)
 
     src_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet.csv'
     output_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet_cleared.csv'
-    #deal2(src_file2, output_file2)
+    deal2(src_file2, output_file2)
 
 
     #生成训练v2w的语料
-    output_file3 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/trainv2wcotpus_ltp.csv'
+    output_file3 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/trainv2wcotpus_jieba.csv'
     createEmbeddingCorpus(output_file, output_file2, output_file3)
 
     #生成字典

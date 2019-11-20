@@ -206,10 +206,10 @@ def createEmbeddingCorpus(src_file,src_file2,output_file):
     把csv专成txt
     :return:
     """
-    src_df = pd.read_csv(src_file, encoding='utf-8', sep='\t')
+    src_df = pd.read_csv(src_file, encoding='utf-8', sep=None)
     src_df['merged'] = src_df[[ 'Question', 'Dialogue','Report']].apply( process,axis=1)#
 
-    src_df2 = pd.read_csv(src_file2, encoding='utf-8',   sep='\t')
+    src_df2 = pd.read_csv(src_file2, encoding='utf-8',   sep=None)
     src_df2['merged'] = src_df[[ 'Question', 'Dialogue']].apply(process,axis=1)
 
     merged_df = pd.concat([src_df[['merged']],src_df2[['merged']]],axis=0)
@@ -235,11 +235,11 @@ if __name__ == '__main__':
 
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet.csv'
     output_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet_cleared.csv'
-    deal2(src_file, output_file)
+    #deal2(src_file, output_file)
 
     src_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet.csv'
     output_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet_cleared.csv'
-    deal2(src_file2, output_file2)
+    #deal2(src_file2, output_file2)
 
 
     #生成训练v2w的语料

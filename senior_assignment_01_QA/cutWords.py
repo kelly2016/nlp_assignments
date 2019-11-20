@@ -67,7 +67,7 @@ class Analyzer(object):
         if self.replaceP == True:
             sens = split(string)
         else:
-            sens = strQ2B(string)
+            sens = [string]#strB2Q(string)
         for sen in sens:
             if self.type == Analyzer.ANALYZERS.Jieba:
                 # 使用jieba进行分词
@@ -95,7 +95,7 @@ class Analyzer(object):
         if self.replaceP == True:
             sens = split(string)
         else:
-            sens = [strB2Q(string)]
+            sens =  [string]#[strB2Q(string)]
         for sen in sens:
             if self.type == Analyzer.ANALYZERS.Jieba:
                 # 使用jieba进行分词
@@ -150,6 +150,8 @@ def strB2Q(ustring):
 
 
 if __name__ == '__main__':
-    analyzer = Analyzer(Analyzer.ANALYZERS.LTP,False,False)
-    print(analyzer.cut('  '))
-    print(analyzer.cut2list(' '))
+    analyzer = Analyzer(Analyzer.ANALYZERS.Jieba, replaceP=False, useStopwords=False,
+                        userdict='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
+
+    print(analyzer.cut('微型货车，金杯西部牛仔，4f18发动机。德尔福电脑。 问题'))
+    #print(analyzer.cut2list('启辰D50'))

@@ -36,7 +36,7 @@ def preprocess(string):
     if string is  None or  type(string) != str or len(string) == 0:
         return ' '
 
-    words = analyzer.cut2list(string.replace('[语音]','').replace('\t','').replace('\n','').replace('|','。').replace('[图片]',' ').replace(',','，'))
+    words = analyzer.cut2list(string.replace('[语音]','').replace('\t','').replace('\n','').replace('|','。').replace('[图片]',' ').replace(',','，').replace('。',' 。 '))#。这么做是因为ltp的切词好怪异"。德尔福"在一起
     return ' '.join(words)
 
 def data_fram_proc(df):
@@ -81,6 +81,7 @@ def deal2(src_file,output_file):
         :return:
         """
     src_df = pd.read_csv(src_file, encoding='utf-8',  sep=None)
+    src_df.replace(to_replace=r'^\s*$', value=np.nan, regex=True, inplace=True)
     if len(src_df.columns) == 6:
          src_df.dropna(subset=['Question', 'Dialogue', 'Report'], how='any', inplace=True)
     else:
@@ -141,18 +142,14 @@ def deal(src_file,output_file):
 
 
 def wirteDict(src_file,dictFile):
-    #src_df = pd.read_csv(src_file, encoding='utf-8',  sep=None,error_bad_lines=False)
-    fo = open(src_file, "r+")
+    src_df = pd.read_csv(src_file, encoding='utf-8',  sep = '\t')
     words = []
-    try:
-        while True:
-            text_line = fo.readline()
-            if text_line:
-                words += text_line.split(' ')
-            else:
-              break
-    finally:
-        fo.close()
+    for j, values in enumerate(src_df.values):
+
+        if values[0]:
+            if '\n' in values[0]:
+                bug = 0
+            words += values[0].split(' ')
 
     counter = Counter(words)
     f = open(dictFile, 'w')  # 若是'wb'就表示写二进制文件
@@ -188,7 +185,20 @@ def createUserDict(src_file,output_file):
 
 
 def process(series):
-    return series['Question'] +' '+series['Dialogue']+' '+series['Dialogue']
+    string = ''
+    if series.size == 3:
+       if type(series['Question']) == float:
+            bug = 0
+       if type(series['Dialogue']) == float:
+            bug = 0
+       if type(series['Report']) == float:
+            bug = 0
+       string =  series['Question'] + ' ' + series['Dialogue'] + ' ' + series['Report']
+    else:
+        string = series['Question'] + ' ' + series['Dialogue']
+    return  string
+
+
 
 
 def createEmbeddingCorpus(src_file,src_file2,output_file):
@@ -196,10 +206,10 @@ def createEmbeddingCorpus(src_file,src_file2,output_file):
     把csv专成txt
     :return:
     """
-    src_df = pd.read_csv(src_file, encoding='utf-8', sep=None)
+    src_df = pd.read_csv(src_file, encoding='utf-8', sep='\t')
     src_df['merged'] = src_df[[ 'Question', 'Dialogue','Report']].apply( process,axis=1)#
 
-    src_df2 = pd.read_csv(src_file2, encoding='utf-8',   sep=None)
+    src_df2 = pd.read_csv(src_file2, encoding='utf-8',   sep='\t')
     src_df2['merged'] = src_df[[ 'Question', 'Dialogue']].apply(process,axis=1)
 
     merged_df = pd.concat([src_df[['merged']],src_df2[['merged']]],axis=0)

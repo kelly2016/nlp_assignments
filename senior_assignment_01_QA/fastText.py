@@ -13,7 +13,7 @@ from gensim.models import FastText
 from sklearn.manifold import TSNE
 from gensim.test.utils import get_tmpfile
 #from gensim.models.utils_any2vec import _save_word2vec_format, _load_word2vec_format, _compute_ngrams, _ft_hash
-
+import pandas as pd
 #plt.rcParams['font.sans-serif'] = ['SimHei']
 #plt.rcParams['axes.unicode_minus'] = False
 
@@ -25,25 +25,19 @@ def train(corpusFile,modelFile,vectorFile):
     :param vectorFile: 保存的词量文件地址
     :return:
     """
-    '''
-    sentences = []
-    with open(corpusFile, encoding="UTF-8") as f:
-        line = f.readline()  # str类型
-        while line:
-            try:
 
-                sentences += [line.split()]
-                line = f.readline()  # str类型
-            except Exception as err:
-                raise (err)
-                line = '#'
-     '''
+    sentences = []
+    src_df = pd.read_csv(corpusFile, encoding='utf-8', sep='\t')
+    words = []
+    for j, values in enumerate(src_df.values):
+        sentences += [values[0].split()]
+
 
     print('initial training   ')
     model = FastText( min_count=1)  # instantiate
     #云服务器的老版本
     print('start  build_vocab  ')
-    '''
+
     model.build_vocab(sentences=sentences)  # scan over corpus to build the vocabulary
     print('start training   ')
     model.train(sentences, total_examples=len(sentences), epochs=10,workers=multiprocessing.cpu_count())
@@ -52,7 +46,7 @@ def train(corpusFile,modelFile,vectorFile):
     total_words = model.corpus_total_words  # number of words in the corpus
     print('start training   ')
     model.train(corpus_file=corpusFile, total_words=total_words, epochs=10,workers=multiprocessing.cpu_count())
-
+    '''
     print('training finished  ' )
     fname = get_tmpfile(modelFile)
     model.save(fname)

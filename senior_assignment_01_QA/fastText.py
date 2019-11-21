@@ -34,7 +34,7 @@ def train(corpusFile,modelFile,vectorFile):
 
 
     print('initial training   ')
-    model = FastText( min_count=1)  # instantiate
+    model = FastText( min_count=1,size=300)  # instantiate
     #云服务器的老版本
     print('start  build_vocab  ')
 
@@ -170,13 +170,7 @@ if __name__=='__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
-    modelFile = dir +'fasttext_jieba.model'#
-    train(corpusFile=dir+'AutoMaster/trainv2wcotpus_jieba.csv',modelFile=modelFile , vectorFile=dir+'AutoMasterfasttext_jieba.v')#
-    #modelFile = dir + 'fasttext_ltp.model'  #
-    #train(corpusFile=dir + 'wiki_corpus_ltp', modelFile=modelFile, vectorFile=dir + 'fasttext_ltp.v')  #
-    #modelFile = 'fasttext.model'  #
-    #train(corpusFile= 'test', modelFile=modelFile, vectorFile= 'fl.v')  #
+    modelFile = dir +'AutoMaster/fasttext_jieba.model'#
+    train(corpusFile=dir+'AutoMaster/trainv2wcotpus_jieba.csv',modelFile=modelFile , vectorFile=dir+'AutoMaster/fasttext_jieba.v')#
     #retrain(dir + 'AutoMaster/trainv2wcotpus_ltp.csv', modelFile, dir + 'AutoMaster/fasttext_ltp.v')
-    #retrain(dir + 'zh_wiki_corpus02', modelFile, dir + 'w2v.v')
     fastTextTest(modelFile)
-    #view(modelFile)

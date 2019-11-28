@@ -96,9 +96,8 @@ def retrains(corpusFiles,modelFile,vectorFile):
             sentences += [values[0].split()]
         print('statrt train the {} file -- {} '.format(count,corpusFile))
         model.build_vocab(sentences=sentences, update=True)
-        total_words = model.corpus_total_words  # number of words in the corpus
-        model.train(sentences=sentences, total_words=total_words, epochs=2, workers=multiprocessing.cpu_count())
-
+        model.train(sentences=sentences, total_examples=model.corpus_count, epochs=2, workers=multiprocessing.cpu_count())
+        count += 1
     print('end train')
     fname = get_tmpfile(modelFile)
     model.save(fname)

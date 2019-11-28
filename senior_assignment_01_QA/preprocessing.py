@@ -20,7 +20,9 @@ from collections import Counter
 from  cutWords import Analyzer
 import cutWords
 import multiprocessing
-
+import os
+import setproctitle
+import util
 analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=False,useStopwords=False,userdict ='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
 
 cores = multiprocessing.cpu_count()
@@ -216,11 +218,78 @@ def createEmbeddingCorpus(src_file,src_file2,output_file):
     print('train data size {},test data size {},merged_df data size {}'.format(len(src_df), len(src_df2),
                                                                                len(merged_df)))
 
+def pad_proc(sentence, max_len, vocab):
+    '''
+    < start > < end > < pad > < unk >
+    '''
+    # 0.按空格统计切分出词
+    words = sentence.strip().split(' ')
+    # 1. 截取规定长度的词数
+    words = words[:max_len]
+    # 2. 填充< unk > ,判断是否在vocab中, 不在填充 < unk >
+    sentence = [word if word in vocab else '<UNK>' for word in words]
+    # 3. 填充< start > < end >
+    sentence = ['<START>'] + sentence + ['<STOP>']
+    # 4. 判断长度，填充　< pad >
+    sentence = sentence + ['<PAD>'] * (max_len  - len(words))
+    return ' '.join(sentence)
 
+def get_max_len(data):
+    """
+    获得合适的最大长度值
+    :param data: 待统计的数据  train_df['Question']
+    :return: 最大长度值
+    """
+    max_lens = data.apply(lambda x: x.count(' '))
+    return int(np.mean(max_lens) + 2 * np.std(max_lens))
 
+def formatDataset(trainFile,testFile,vocab,train_x_pad_path,train_y_pad_path,test_x_pad_path):
+    """
+     格式化好训练的数据集
+    :param trainFile: 训练集
+    :param testFile: 测试集
+    :param vocab: 词表
+    :return:
+    """
+    #读入分好词的数据
+    train_df = pd.read_csv(trainFile, encoding='utf-8', sep=None)
+    test_df = pd.read_csv(testFile, encoding='utf-8', sep=None)
+    #合并训练数据
+    train_df['X'] = train_df[['Question', 'Dialogue']].apply(lambda x: ' '.join(x), axis=1)
+    test_df['X'] = test_df[['Question', 'Dialogue']].apply(lambda x: ' '.join(x), axis=1)
+
+    # 获取输入数据 适当的最大长度
+    x_max_len = max(get_max_len(test_df['X']), get_max_len(train_df['X']))
+    # 获取标签数据 适当的最大长度
+    train_y_max_len = get_max_len(train_df['Report'])
+
+    #对数据进行格式化：截取，填充
+    # 训练集X处理
+    train_df['X'] = train_df['X'].apply(lambda x: pad_proc(x, x_max_len, vocab))
+    # 训练集Y处理
+    train_df['Y'] = train_df['Report'].apply(lambda x: pad_proc(x, train_y_max_len, vocab))
+    # 测试集X处理
+    test_df['X'] = test_df['X'].apply(lambda x: pad_proc(x, x_max_len, vocab))
+
+    #保存中间结果
+    train_df['X'].to_csv(train_x_pad_path, index=None, header=False)
+    train_df['Y'].to_csv(train_y_pad_path, index=None, header=False)
+    test_df['X'].to_csv(test_x_pad_path, index=None, header=False)
+
+    return  train_df,test_df
 
 if __name__ == '__main__':
-
+    setproctitle.setproctitle('kelly')
+    dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep+ 'AutoMaster' + os.sep
+    print(dir )
+    trainFile = dir + 'AutoMaster_TrainSet_cleared.csv'
+    testFile =  dir + 'AutoMaster_TestSet_cleared.csv'
+    modelFile = dir +  'fastmodel/fasttext_jieba.model'
+    vocab, embedding_matrix = util.getEmbedding_matrixFromModel(modelFile)
+    train_x_pad_path =dir + 'AutoMaster_Train_X.csv'
+    train_y_pad_path = dir + 'AutoMaster_Train_Y.csv'
+    test_x_pad_path = dir + 'AutoMaster_Test_X.csv'
+    formatDataset(trainFile, testFile, vocab, train_x_pad_path, train_y_pad_path, test_x_pad_path)
     '''
     #创建专业词表
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet.csv'

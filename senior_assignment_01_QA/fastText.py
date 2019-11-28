@@ -16,6 +16,7 @@ from gensim.test.utils import get_tmpfile
 import pandas as pd
 #plt.rcParams['font.sans-serif'] = ['SimHei']
 #plt.rcParams['axes.unicode_minus'] = False
+from gensim.models.word2vec import LineSentence
 
 def train(corpusFile,modelFile,vectorFile):
     """
@@ -34,7 +35,7 @@ def train(corpusFile,modelFile,vectorFile):
 
 
     print('initial training   ')
-    model = FastText( min_count=1,size=300)  # instantiate
+    model = FastText( min_count=2,size=300)  # instantiate
     #云服务器的老版本
     print('start  build_vocab  ')
 
@@ -68,11 +69,37 @@ def retrain(corpusFile,modelFile,vectorFile):
     model = FastText.load(modelFile)  # instantiate
     model.build_vocab(corpus_file=corpusFile, update=True)
     total_words = model.corpus_total_words  # number of words in the corpus
-    model.train(corpus_file=corpusFile, total_words=total_words, epochs=5,workers=multiprocessing.cpu_count())
+    model.train(corpus_file=corpusFile, total_words=total_words, epochs=10,workers=multiprocessing.cpu_count())
     fname = get_tmpfile(modelFile)
     model.save(fname)
     model.wv.save_word2vec_format(vectorFile, binary=False)
     print('retrain finished the modelFile = {} and the vectorFile = {} '.format(modelFile,vectorFile))
+    return modelFile,vectorFile
+
+def retrains(corpusFiles,modelFile,vectorFile):
+    """
+
+
+    增量训练需要的文件
+    :param corpusFile: 训练模型语料
+    :param modelFile: 保存的模型文件地址
+    :param vectorFile: 保存的词量文件地址
+    :return:
+    """
+    print('modelFile=', modelFile)
+    model = FastText.load(modelFile)  # instantiate
+    count = 0
+    for corpusFile in corpusFiles:
+        print('statrt train the {} file -- {} '.format(count,corpusFile))
+        model.build_vocab(LineSentence(corpusFile), update=True)
+        total_words = model.corpus_total_words  # number of words in the corpus
+        model.train(corpus_file=corpusFile, total_words=total_words, epochs=2, workers=multiprocessing.cpu_count())
+
+    print('end train')
+    fname = get_tmpfile(modelFile)
+    model.save(fname)
+    model.wv.save_word2vec_format(vectorFile, binary=False)
+    print('retrains finished the modelFile = {} and the vectorFile = {} '.format(modelFile,vectorFile))
     return modelFile,vectorFile
 
 
@@ -170,7 +197,10 @@ if __name__=='__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
     print('dir = ',dir)
-    modelFile = dir +'AutoMaster/fasttext_jieba.model'#
+    modelFile = dir +'AutoMaster/fasttext/fasttext_jieba.model'#
+    #retrains(corpusFiles=['','',''], modelFile=modelFile, vectorFile=dir+'AutoMaster/fasttext_jieba.v')
     train(corpusFile=dir+'AutoMaster/trainv2wcotpus_jieba.csv',modelFile=modelFile , vectorFile=dir+'AutoMaster/fasttext_jieba.v')#
     #retrain(dir + 'AutoMaster/trainv2wcotpus_ltp.csv', modelFile, dir + 'AutoMaster/fasttext_ltp.v')
-    fastTextTest(modelFile)
+    #fastTextTest(modelFile)
+
+    retrains

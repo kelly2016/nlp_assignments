@@ -112,8 +112,8 @@ def classificationreport(classmethodBame ,y_true , y_pred ,target_names ):
     :return:
     """
     print('{} accuracy:{}'.format(classmethodBame,accuracy_score(y_true, y_pred)))
-    print(classification_report(y_true, y_pred, target_names=target_names))
-
+    #print(classification_report(y_true, y_pred, target_names=target_names))
+    print(classification_report(y_true, y_pred))
 
 class kNN(object):
 

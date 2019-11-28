@@ -6,6 +6,7 @@
 # @Description:常用工具类
 import setproctitle
 import os
+from gensim.models import FastText
 
 def getEmbedding_matrix(dictFile,vectorFile):
     """
@@ -50,10 +51,23 @@ def getEmbedding_matrix(dictFile,vectorFile):
     return (we, embedding_matrix)
 
 
+def getEmbedding_matrixFromModel( modelFile):
+    """
+    从模型中构建词向量矩阵
+    :param model:fastText
+    :return:
+    """
+    model = FastText.load(modelFile)  # instantiate
+    vocab = {word:index for index,word in enumerate(model.wv.index2word)}
+    embedding_matrix = model.wv.vectors
+    return vocab,embedding_matrix
+
 if __name__=='__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep
     print('dir = ', dir)
+    modelFile = 'AutoMaster/fastmodel/'
+    getEmbedding_matrixFromModel(modelFile)
 
     dictFile =dir+'AutoMaster/AutoMaster_Counter.txt'
     vectorFile =dir+'AutoMaster/fasttext_jieba.v'

@@ -90,10 +90,14 @@ def retrains(corpusFiles,modelFile,vectorFile):
     model = FastText.load(modelFile)  # instantiate
     count = 0
     for corpusFile in corpusFiles:
+        sentences = []
+        src_df = pd.read_csv(corpusFile, encoding='utf-8', sep='\t')
+        for j, values in enumerate(src_df.values):
+            sentences += [values[0].split()]
         print('statrt train the {} file -- {} '.format(count,corpusFile))
-        model.build_vocab(LineSentence(corpusFile), update=True)
+        model.build_vocab(sentences=sentences, update=True)
         total_words = model.corpus_total_words  # number of words in the corpus
-        model.train(corpus_file=corpusFile, total_words=total_words, epochs=2, workers=multiprocessing.cpu_count())
+        model.train(sentences=sentences, total_words=total_words, epochs=2, workers=multiprocessing.cpu_count())
 
     print('end train')
     fname = get_tmpfile(modelFile)
@@ -195,11 +199,14 @@ def fastTextNgramsVector(fasttext_model):
 
 if __name__=='__main__':
     setproctitle.setproctitle('kelly')
-    dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+os.sep
+    dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+ os.sep+ 'AutoMaster' + os.sep
     print('dir = ',dir)
-    modelFile = dir +'AutoMaster/fasttext/fasttext_jieba.model'#
-    #retrains(corpusFiles=['','',''], modelFile=modelFile, vectorFile=dir+'AutoMaster/fasttext_jieba.v')
-    train(corpusFile=dir+'AutoMaster/trainv2wcotpus_jieba.csv',modelFile=modelFile , vectorFile=dir+'AutoMaster/fasttext_jieba.v')#
+    modelFile = dir +'fasttext/fasttext_jieba.model'#
+    train_x_pad_path = dir + 'AutoMaster_Train_X.csv'
+    train_y_pad_path = dir + 'AutoMaster_Train_Y.csv'
+    test_x_pad_path = dir + 'AutoMaster_Test_X.csv'
+    retrains(corpusFiles=[train_x_pad_path,train_y_pad_path,test_x_pad_path], modelFile=modelFile, vectorFile=dir+'fasttext_jieba.v')
+    #train(corpusFile=dir+'AutoMaster/trainv2wcotpus_jieba.csv',modelFile=modelFile , vectorFile=dir+'AutoMaster/fasttext_jieba.v')#
     #retrain(dir + 'AutoMaster/trainv2wcotpus_ltp.csv', modelFile, dir + 'AutoMaster/fasttext_ltp.v')
     #fastTextTest(modelFile)
 

@@ -262,7 +262,7 @@ def formatDataset(trainFile,testFile,vocab,train_x_pad_path,train_y_pad_path,tes
     x_max_len = max(get_max_len(test_df['X']), get_max_len(train_df['X']))
     # 获取标签数据 适当的最大长度
     train_y_max_len = get_max_len(train_df['Report'])
-
+    print('x_max_len = {} ,train_y_max_len = {} '.format(x_max_len,train_y_max_len))
     #对数据进行格式化：截取，填充
     # 训练集X处理
     train_df['X'] = train_df['X'].apply(lambda x: pad_proc(x, x_max_len, vocab))
@@ -284,7 +284,7 @@ if __name__ == '__main__':
     print(dir )
     trainFile = dir + 'AutoMaster_TrainSet_cleared.csv'
     testFile =  dir + 'AutoMaster_TestSet_cleared.csv'
-    modelFile = dir +  'fastmodel/fasttext_jieba.model'
+    modelFile = dir +  'fasttext/fasttext_jieba.model'
     vocab, embedding_matrix = util.getEmbedding_matrixFromModel(modelFile)
     train_x_pad_path =dir + 'AutoMaster_Train_X.csv'
     train_y_pad_path = dir + 'AutoMaster_Train_Y.csv'

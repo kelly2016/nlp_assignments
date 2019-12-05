@@ -287,6 +287,33 @@ def formatDataset(trainFile,testFile,vocab,train_x_pad_path,train_y_pad_path,tes
 
     return  train_df,test_df,x_max_len,train_y_max_len
 
+# 遇到未知词就填充unk的索引
+def transform_data(sentence,vocab,unkownchar = '<UNK>'):
+    unk_index = vocab[unkownchar]
+    # 字符串切分成词
+    words=sentence.split(' ')
+    # 按照vocab的index进行转换
+    ids=[vocab[word] if word in vocab else unk_index for word in words]
+    return ids
+
+def load_dataset(file,vocab):
+    """
+    将输入语料文字转换成索引index
+    :param file:
+    :param vocab:
+    :return:
+    """
+    df = pd.read_csv(file, encoding='utf-8', sep=None)
+
+    # 将词转换成索引  [<START> 方向机 重 ...] -> [32800, 403, 986, 246, 231
+    ids = df[0].apply(lambda x: transform_data(x, vocab))
+
+    # 将索引列表转换成矩阵 [32800, 403, 986, 246, 231] --> array([[32800,   403,   986 ]]
+    return np.array(ids.tolist())
+
+
+
+
 if __name__ == '__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep+ 'AutoMaster' + os.sep

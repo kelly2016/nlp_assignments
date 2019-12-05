@@ -4,9 +4,11 @@
 # @Email   : 289786098@qq.com
 # @File    : util.py
 # @Description:常用工具类
-import setproctitle
 import os
+import setproctitle
+
 from gensim.models import FastText
+
 
 def getEmbedding_matrix(dictFile,vectorFile):
     """
@@ -59,8 +61,9 @@ def getEmbedding_matrixFromModel( modelFile):
     """
     model = FastText.load(modelFile)  # instantiate
     vocab = {word:index for index,word in enumerate(model.wv.index2word)}
+    reverse_vocab = {index: word for index, word in enumerate(wv_model.wv.index2word)}
     embedding_matrix = model.wv.vectors
-    return vocab,embedding_matrix
+    return vocab,reverse_vocab,embedding_matrix
 
 if __name__=='__main__':
     setproctitle.setproctitle('kelly')

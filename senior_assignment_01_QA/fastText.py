@@ -5,18 +5,20 @@
 # @File    : wordsTask.py
 # @Description:用faskText 生成词向量c词频文件
 
-import setproctitle
 import multiprocessing
 import os
-from gensim.models import FastText
-#import matplotlib.pylab as plt
-from sklearn.manifold import TSNE
-from gensim.test.utils import get_tmpfile
-#from gensim.models.utils_any2vec import _save_word2vec_format, _load_word2vec_format, _compute_ngrams, _ft_hash
+import setproctitle
+
+import matplotlib.pylab as plt
+# from gensim.models.utils_any2vec import _save_word2vec_format, _load_word2vec_format, _compute_ngrams, _ft_hash
 import pandas as pd
-#plt.rcParams['font.sans-serif'] = ['SimHei']
-#plt.rcParams['axes.unicode_minus'] = False
-from gensim.models.word2vec import LineSentence
+from gensim.models import FastText
+from gensim.test.utils import get_tmpfile
+from sklearn.manifold import TSNE
+
+plt.rcParams['font.sans-serif'] = ['SimHei']
+plt.rcParams['axes.unicode_minus'] = False
+
 
 def train(corpusFile,modelFile,vectorFile):
     """
@@ -66,10 +68,16 @@ def retrain(corpusFile,modelFile,vectorFile):
     :return:
     """
     print('modelFile=', modelFile)
+    print('initial training   ')
     model = FastText.load(modelFile)  # instantiate
-    model.build_vocab(corpus_file=corpusFile, update=True)
-    total_words = model.corpus_total_words  # number of words in the corpus
-    model.train(corpus_file=corpusFile, total_words=total_words, epochs=10,workers=multiprocessing.cpu_count())
+    sentences = []
+    src_df = pd.read_csv(corpusFile, encoding='utf-8', sep='\t')
+    for j, values in enumerate(src_df.values):
+        sentences += [values[0].split()]
+    print('start  build_vocab  ')
+    model.build_vocab(sentences=sentences, update=True)
+    model.train(sentences=sentences, total_examples=model.corpus_count, epochs=50, workers=multiprocessing.cpu_count())
+    print('end train')
     fname = get_tmpfile(modelFile)
     model.save(fname)
     model.wv.save_word2vec_format(vectorFile, binary=False)
@@ -115,20 +123,13 @@ def fastTextTest(modelFile):
     model = FastText.load(modelFile)
     print('wv.vector_size' , model.wv.vector_size)
 
-    print("文学's vector is {}".format( model.wv['文学']))
     print('美方' in model.wv.vocab)
-    print(model.most_similar("文学"))
+    print(model.most_similar("说"))
     #print(fastTextNgramsVector(model))
-    print("希腊语's vector is {}".format(model.wv['希腊语']))
-    print("商品's vector is {}".format(model.wv['商品']))
-    #查看字典
-    for word in model.wv.vocab:
-        print("{}'s vector is {}".format(word,model.wv[word]))
-
-
-
-
-    #词向量存储在model.wv的KeyedVectors实例中，可以直接在KeyedVectors中查询词向量。
+   #查看字典
+    #for word in model.wv.vocab:
+        #print("{}'s vector is {}".format(word,model.wv[word]))
+   #词向量存储在model.wv的KeyedVectors实例中，可以直接在KeyedVectors中查询词向量。
     print("1 .{} 's vector is {}".format('研究',model.wv['研究']))
     #第二个应用是看两个词向量的相近程度，这里给出了书中两组人的相似程度：
     print("2 .{} and {} 's similarity is {}".format(u'定理',u'公理',model.wv.similarity(u'定理',u'公理')))
@@ -144,7 +145,7 @@ def fastTextTest(modelFile):
     list_sim1 = model.wv.n_similarity(list1,list2)
     print('6 .',list_sim1)
 
-'''
+
 def tsne_plot(model):
     "Creates and TSNE model and plots it"
     labels = []
@@ -181,7 +182,7 @@ def view(modelFile):
     """
     model = FastText.load(modelFile)
     tsne_plot(model)
-'''
+
 '''
 def fastTextNgramsVector(fasttext_model):
     fasttext_word_list = fasttext_model.wv.vocab.keys()
@@ -200,13 +201,14 @@ if __name__=='__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) +  os.sep+'data'+ os.sep+ 'AutoMaster' + os.sep
     print('dir = ',dir)
-    modelFile = dir +'fasttext/fasttext_jieba.model'#
+    modelFile = dir +'fasttext3/fasttext_jieba.model'#
     train_x_pad_path = dir + 'AutoMaster_Train_X.csv'
     train_y_pad_path = dir + 'AutoMaster_Train_Y.csv'
     test_x_pad_path = dir + 'AutoMaster_Test_X.csv'
-    retrains(corpusFiles=[train_x_pad_path,train_y_pad_path,test_x_pad_path], modelFile=modelFile, vectorFile=dir+'fasttext_jieba.v')
-    #train(corpusFile=dir+'AutoMaster/trainv2wcotpus_jieba.csv',modelFile=modelFile , vectorFile=dir+'AutoMaster/fasttext_jieba.v')#
-    #retrain(dir + 'AutoMaster/trainv2wcotpus_ltp.csv', modelFile, dir + 'AutoMaster/fasttext_ltp.v')
-    #fastTextTest(modelFile)
+    train(corpusFile=dir+'trainv2wcotpus_jieba_2.csv',modelFile=modelFile , vectorFile=dir+'fasttext_jieba_2.v')#
+    #retrain(dir + 'trainv2wcotpus_ltp.csv', modelFile, dir + 'fasttext_ltp.v')
+    # retrains(corpusFiles=[train_x_pad_path,train_y_pad_path,test_x_pad_path], modelFile=modelFile, vectorFile=dir+'fasttext_jieba.v')
 
-    retrains
+    fastTextTest(modelFile)
+    view(modelFile)
+

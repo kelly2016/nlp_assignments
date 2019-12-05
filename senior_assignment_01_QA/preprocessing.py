@@ -14,15 +14,17 @@
 # 提交作业格式：建议使用zip压缩包上传个人作业
 # 文件命名格式：“作业1+姓名+班级名+提交日期”，例如：【作业1+伊帆+图灵班+11.15】
 
-import pandas as pd
-import tensorflow as tf
-from collections import Counter
-from  cutWords import Analyzer
-import cutWords
 import multiprocessing
 import os
 import setproctitle
+from collections import Counter
+
+import pandas as pd
+
+import cutWords
 import util
+from cutWords import Analyzer
+
 analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=False,useStopwords=False,userdict ='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
 
 cores = multiprocessing.cpu_count()
@@ -88,6 +90,13 @@ def deal2(src_file,output_file):
     else:
          src_df.dropna(subset=['Question', 'Dialogue'], how='any', inplace=True)
     src_df = parallelize(src_df,data_fram_proc)
+    #分词过滤后可能又有空的
+    src_df.replace(to_replace=r'^\s*$', value=np.nan, regex=True, inplace=True)
+    if len(src_df.columns) == 6:
+        src_df.dropna(subset=['Question', 'Dialogue', 'Report'], how='any', inplace=True)
+    else:
+        src_df.dropna(subset=['Question', 'Dialogue'], how='any', inplace=True)
+
     src_df.to_csv(output_file,index=None,header =True)
 
 '''
@@ -160,8 +169,8 @@ def wirteDict(src_file,dictFile):
     # 计算单词频率
     words = sorted(counter.items(), key=lambda x: x[1], reverse=True)
     for k, v in words:
-        f.write('{} {} {}\n'.format(k, v, (v / total_count)))
-        print('{} {} {}\n'.format(k, v, (v / total_count)))
+        f.write('{} {} \n'.format(k, v ))
+        print('{} {} \n'.format(k, v ))
     f.close()
 
 
@@ -240,7 +249,7 @@ def get_max_len(data):
     :param data: 待统计的数据  train_df['Question']
     :return: 最大长度值
     """
-    max_lens = data.apply(lambda x: x.count(' '))
+    max_lens = data.apply(lambda x: x.count(' ')+1)
     return int(np.mean(max_lens) + 2 * np.std(max_lens))
 
 def formatDataset(trainFile,testFile,vocab,train_x_pad_path,train_y_pad_path,test_x_pad_path):
@@ -276,20 +285,13 @@ def formatDataset(trainFile,testFile,vocab,train_x_pad_path,train_y_pad_path,tes
     train_df['Y'].to_csv(train_y_pad_path, index=None, header=False)
     test_df['X'].to_csv(test_x_pad_path, index=None, header=False)
 
-    return  train_df,test_df
+    return  train_df,test_df,x_max_len,train_y_max_len
 
 if __name__ == '__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep+ 'AutoMaster' + os.sep
     print(dir )
-    trainFile = dir + 'AutoMaster_TrainSet_cleared.csv'
-    testFile =  dir + 'AutoMaster_TestSet_cleared.csv'
-    modelFile = dir +  'fasttext/fasttext_jieba.model'
-    vocab, embedding_matrix = util.getEmbedding_matrixFromModel(modelFile)
-    train_x_pad_path =dir + 'AutoMaster_Train_X.csv'
-    train_y_pad_path = dir + 'AutoMaster_Train_Y.csv'
-    test_x_pad_path = dir + 'AutoMaster_Test_X.csv'
-    formatDataset(trainFile, testFile, vocab, train_x_pad_path, train_y_pad_path, test_x_pad_path)
+
     '''
     #创建专业词表
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet.csv'
@@ -298,24 +300,35 @@ if __name__ == '__main__':
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet.csv'
     output_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt'
     createUserDict(src_file, output_file)
-    '''
+    
 
     #生成训练s2s模型的训练集测试集
 
-    src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet.csv'
-    output_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TrainSet_cleared.csv'
+    src_file =dir + 'AutoMaster_TrainSet.csv'
+    output_file = dir +'AutoMaster_TrainSet_cleared.csv'
     deal2(src_file, output_file)
 
-    src_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet.csv'
-    output_file2 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet_cleared.csv'
+    src_file2 = dir +'AutoMaster_TestSet.csv'
+    output_file2 = dir +'AutoMaster_TestSet_cleared.csv'
     deal2(src_file2, output_file2)
 
 
     #生成训练v2w的语料
-    output_file3 = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/trainv2wcotpus_jieba.csv'
+    output_file3 = dir + 'trainv2wcotpus_jieba.csv'
     createEmbeddingCorpus(output_file, output_file2, output_file3)
 
     #生成字典
-    dictFile = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_Counter.txt'
+    dictFile =dir + 'AutoMaster_Counter_jieba.txt'
     wirteDict(output_file3,dictFile)
+    '''
 
+    trainFile = dir + 'AutoMaster_TrainSet_cleared.csv'
+    testFile =  dir + 'AutoMaster_TestSet_cleared.csv'
+    modelFile = dir +  'fasttext/fasttext_jieba.model'
+
+    vocab, embedding_matrix = util.getEmbedding_matrixFromModel(modelFile)
+
+    train_x_pad_path =dir + 'AutoMaster_Train_X_jieba.csv'
+    train_y_pad_path = dir + 'AutoMaster_Train_Y_jieba.csv'
+    test_x_pad_path = dir + 'AutoMaster_Test_X_jieba.csv'
+    formatDataset(trainFile, testFile, vocab, train_x_pad_path, train_y_pad_path, test_x_pad_path)

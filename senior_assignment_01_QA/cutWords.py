@@ -5,11 +5,14 @@
 # @File    : cutWord.py
 # @Description:封装各类分词器，每次复制粘贴代码挺乱的
 
-import  logging,jieba, os, re
-from functools import lru_cache
+import jieba
+import logging
+import os
+import re
 from enum import Enum
-import pyltpAnalyzer
+from functools import lru_cache
 
+import pyltpAnalyzer
 
 #标点符号punctuation
 P = r'\||\[|\]|\r|\n|\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|（|）|＊|＋|，|－|／|：|；|＜|＝|＞|＠|\［|\＼|\］|\＾|＿|｀|\～|｟|｠|\、|〃|》|「|」|『|』|【|】|〔|〕|〖|〗|〘|〙|〚|〛|〜|\〝|\〞|〟|〰|〾|〿|–—|\‘|\“|\„|\‟|\…|\‧|﹏|\.'
@@ -18,7 +21,7 @@ P = r'\||\[|\]|\r|\n|\”|\《|\。|\{|\！|？|｡|\＂|＃|＄|％|\＆|\＇|�
 
 
 @lru_cache(maxsize=2 ** 10)
-def get_stopwords(stopwordsFile = '/Users/henry/Documents/application/nlp_assignments/data/stopwords.txt'):
+def get_stopwords(stopwordsFile = '/Users/henry/Documents/application/nlp_assignments/data/stopword_ltp.txt.txt'):
     print("start load stopwords")
     logging.basicConfig(format='%(asctime)s:%(levelname)s:%(message)s', level=logging.INFO)
     # 加载停用词表
@@ -93,7 +96,7 @@ class Analyzer(object):
 
         tokens = []
         if self.replaceP == True:
-            sens = split(string)
+            sens = split(string,'' if self.type == Analyzer.ANALYZERS.Jieba else ' ')
         else:
             sens =  [string]#[strB2Q(string)]
         for sen in sens:
@@ -111,13 +114,13 @@ class Analyzer(object):
                 tokens += words
         return tokens
 
-def split(ustring):
+def split(ustring,ch = ' '):
     """
     用标点符号分句
     :param ustring:
     :return:
     """
-    return [re.sub(P, ' ', ustring)] #re.split(p,ustring)#
+    return [re.sub(P, ch, ustring)] #re.split(p,ustring)#
 
 def strQ2B(ustring):
     """把字符串全角转半角"""

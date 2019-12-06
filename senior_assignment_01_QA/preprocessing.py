@@ -303,10 +303,9 @@ def load_dataset(file,vocab):
     :param vocab:
     :return:
     """
-    df = pd.read_csv(file, encoding='utf-8', sep=None)
-
+    df = pd.read_csv(file, encoding='utf-8', header=None,  sep= '\t')
     # 将词转换成索引  [<START> 方向机 重 ...] -> [32800, 403, 986, 246, 231
-    ids = df[0].apply(lambda x: transform_data(x, vocab))
+    ids = df[df.columns[0]].apply(lambda x: transform_data(x, vocab))
 
     # 将索引列表转换成矩阵 [32800, 403, 986, 246, 231] --> array([[32800,   403,   986 ]]
     return np.array(ids.tolist())
@@ -327,7 +326,7 @@ if __name__ == '__main__':
     src_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/AutoMaster_TestSet.csv'
     output_file = '/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt'
     createUserDict(src_file, output_file)
-    
+    '''
 
     #生成训练s2s模型的训练集测试集
 
@@ -339,7 +338,7 @@ if __name__ == '__main__':
     output_file2 = dir +'AutoMaster_TestSet_cleared.csv'
     deal2(src_file2, output_file2)
 
-
+    '''
     #生成训练v2w的语料
     output_file3 = dir + 'trainv2wcotpus_jieba.csv'
     createEmbeddingCorpus(output_file, output_file2, output_file3)
@@ -347,7 +346,7 @@ if __name__ == '__main__':
     #生成字典
     dictFile =dir + 'AutoMaster_Counter_jieba.txt'
     wirteDict(output_file3,dictFile)
-    '''
+   '''
 
     trainFile = dir + 'AutoMaster_TrainSet_cleared.csv'
     testFile =  dir + 'AutoMaster_TestSet_cleared.csv'

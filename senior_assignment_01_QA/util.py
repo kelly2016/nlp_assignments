@@ -61,7 +61,7 @@ def getEmbedding_matrixFromModel( modelFile):
     """
     model = FastText.load(modelFile)  # instantiate
     vocab = {word:index for index,word in enumerate(model.wv.index2word)}
-    reverse_vocab = {index: word for index, word in enumerate(wv_model.wv.index2word)}
+    reverse_vocab = {index: word for index, word in enumerate(model.wv.index2word)}
     embedding_matrix = model.wv.vectors
     return vocab,reverse_vocab,embedding_matrix
 

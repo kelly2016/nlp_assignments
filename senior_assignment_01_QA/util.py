@@ -7,8 +7,81 @@
 import os
 import setproctitle
 
+import numpy as np
+import pandas as pd
+import tensorflow as tf
 from gensim.models import FastText
 
+from plot_utils import *
+
+
+def translate(sentence,max_length_inp,vocab,evaluate):
+    sentence = pad_proc(sentence, max_length_inp, vocab)
+
+    result, sentence, attention_plot = evaluate(sentence)
+
+    print('Input: %s' % (sentence))
+    print('Predicted translation: {}'.format(result))
+
+    attention_plot = attention_plot[:len(result.split(' ')), :len(sentence.split(' '))]
+    plot_attention(attention_plot, sentence.split(' '), result.split(' '))
+
+
+def pad_proc(sentence, max_len, vocab):
+    '''
+    < start > < end > < pad > < unk >
+    '''
+    # 0.按空格统计切分出词
+    words = sentence.strip().split(' ')
+    # 1. 截取规定长度的词数
+    words = words[:max_len]
+    # 2. 填充< unk > ,判断是否在vocab中, 不在填充 < unk >
+    sentence = [word if word in vocab else '<UNK>' for word in words]
+    # 3. 填充< start > < end >
+    sentence = ['<START>'] + sentence + ['<STOP>']
+    # 4. 判断长度，填充　< pad >
+    sentence = sentence + ['<PAD>'] * (max_len  - len(words))
+    return ' '.join(sentence)
+
+
+
+# 遇到未知词就填充unk的索引
+def transform_data(sentence,vocab,unkownchar = '<UNK>'):
+    unk_index = vocab[unkownchar]
+    # 字符串切分成词
+    words=sentence.split(' ')
+    # 按照vocab的index进行转换
+    ids=[vocab[word] if word in vocab else unk_index for word in words]
+    return ids
+
+
+def load_dataset(file,vocab):
+    """
+    将输入语料文字转换成索引index
+    :param file:
+    :param vocab:
+    :return:
+    """
+    df = pd.read_csv(file, encoding='utf-8', header=None,  sep= '\t')
+    # 将词转换成索引  [<START> 方向机 重 ...] -> [32800, 403, 986, 246, 231
+    ids = df[df.columns[0]].apply(lambda x: transform_data(x, vocab))
+
+    # 将索引列表转换成矩阵 [32800, 403, 986, 246, 231] --> array([[32800,   403,   986 ]]
+    return np.array(ids.tolist())
+
+def config_gpu():
+    ## 获取所有的物理GPU
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        try:
+            for gpu in gpus:
+
+                tf.config.experimental.set_memory_growth(gpu, True)
+                # 获取所有的逻辑GPU
+                logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+                print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            print(e)
 
 def getEmbedding_matrix(dictFile,vectorFile):
     """

@@ -9,7 +9,7 @@ from enum import Enum
 
 from beamSearch import *
 from layer import Encoder, Decoder
-from util import *
+from pgn.utils.util import *
 
 
 class Seq2seq(tf.keras.Model):
@@ -72,7 +72,7 @@ class Seq2seq(tf.keras.Model):
         self.loss_object = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True, reduction='none')#稀疏交叉墒
 
         self.encoder = Encoder(self.vocab_size, self.embedding_dim, self.embedding_matrix, self.units, self.BATCH_SIZE)
-        self.decoder = Decoder(self.vocab_size, self.embedding_dim, self.embedding_matrix, self.units,self.BATCH_SIZE)
+        self.decoder = Decoder(self.vocab_size, self.embedding_dim, self.embedding_matrix, self.units*2,self.BATCH_SIZE)
 
         self.optimizer = tf.keras.optimizers.Adam()
         #构建训练集
@@ -388,6 +388,7 @@ class Seq2seq(tf.keras.Model):
 
 
 if __name__ == '__main__':
+
     setproctitle.setproctitle('kelly')
     config_gpu()
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'AutoMaster' + os.sep

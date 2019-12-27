@@ -3,7 +3,7 @@
 import numpy as np
 # 引入日志配置
 
-from utils.config import embedding_matrix_path, vocab_path
+
 
 
 # SENTENCE_START = '<s>'
@@ -21,22 +21,24 @@ class Vocab:
     START_DECODING = '<START>'
     STOP_DECODING = '<STOP>'
 
-    def __init__(self, vocab_file, vocab_max_size=None):
+    def __init__(self, word2id, id2word, vocab_max_size=None):
         """
         Vocab 对象,vocab基本操作封装
         :param vocab_file: Vocab 存储路径
         :param vocab_max_size: 最大字典数量
         """
-        self.word2id, self.id2word , embedding_matrix = getEmbedding_matrixFromModel(embeddingModelFile)
+        self.word2id = word2id
+        self.id2word = id2word
             #self.load_vocab(vocab_file, vocab_max_size)
         self.count = len(self.word2id)
 
     @staticmethod
-    def load_vocab(file_path, vocab_max_size=None):
+    def load_vocab(self,file_path, vocab_max_size=None):
         """
         读取字典
         :param file_path: 文件路径
         :return: 返回读取后的字典
+        """
         """
         vocab = {}
         reverse_vocab = {}
@@ -51,7 +53,8 @@ class Vocab:
                 break
             vocab[word] = index
             reverse_vocab[index] = word
-        return vocab, reverse_vocab
+        """
+        return self.word2id, self.id2word
 
     def word_to_id(self, word):
         if word not in self.word2id:
@@ -67,7 +70,7 @@ class Vocab:
         return self.count
 
 
-def load_embedding_matrix(filepath=embedding_matrix_path):
+def load_embedding_matrix(filepath=None):
     """
     加载 embedding_matrix_path
     """
@@ -75,6 +78,5 @@ def load_embedding_matrix(filepath=embedding_matrix_path):
 
 
 if __name__ == '__main__':
-    # vocab 对象
-    vocab = Vocab(vocab_path)
-    print(vocab.count)
+   pass
+

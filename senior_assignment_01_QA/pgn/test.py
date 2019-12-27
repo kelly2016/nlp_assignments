@@ -11,13 +11,17 @@ from pgn.utils.wv_loader import Vocab
 
 
 def test(params):
-    assert params["mode"].lower() == "test", "change training mode to 'test' or 'eval'"
-    assert params["beam_size"] == params["batch_size"], "Beam size must be equal to batch_size, change the params"
+    #assert params["mode"].lower() == "test", "change training mode to 'test' or 'eval'"
+    #assert params["beam_size"] == params["batch_size"], "Beam size must be equal to batch_size, change the params"
+    setproctitle.setproctitle('kelly')
+    dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'AutoMaster' + os.sep
+    print(dir)
 
     print("Building the model ...")
     model = PGN(params)
 
     print("Creating the vocab ...")
+    vocab_path
     vocab = Vocab(params["vocab_path"], params["vocab_size"])
 
     print("Creating the batcher ...")

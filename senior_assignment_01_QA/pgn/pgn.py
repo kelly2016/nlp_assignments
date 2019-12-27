@@ -5,13 +5,13 @@ import tensorflow as tf
 from pgn.pgn_layer import Encoder, BahdanauAttention, Decoder, Pointer
 from pgn.utils.config import save_wv_model_path
 from pgn.utils.gpu_utils import config_gpu
-from pgn.utils.wv_loader import load_embedding_matrix, Vocab
+from pgn.utils.wv_loader import Vocab
 
 
 class PGN(tf.keras.Model):
-    def __init__(self, params):
+    def __init__(self, params,embedding_matrix):
         super(PGN, self).__init__()
-        self.embedding_matrix = load_embedding_matrix()
+        self.embedding_matrix = embedding_matrix
         self.params = params
         self.encoder = Encoder(params["vocab_size"],
                                params["embed_size"],
@@ -170,7 +170,7 @@ if __name__ == '__main__':
     params["dec_units"] = 512
     params["batch_size"] = batch_size
 
-    model = Seq2Seq(params)
+    model = PGN(params)
 
     # example_input
     example_input_batch = tf.ones(shape=(batch_size, input_sequence_len), dtype=tf.int32)

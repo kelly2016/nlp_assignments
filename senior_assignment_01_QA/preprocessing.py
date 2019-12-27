@@ -22,8 +22,8 @@ from collections import Counter
 import pandas as pd
 
 import cutWords
-import util
 from cutWords import Analyzer
+from pgn.utils import util
 
 analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=False,useStopwords=False,userdict ='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
 
@@ -332,11 +332,11 @@ if __name__ == '__main__':
 
     src_file =dir + 'AutoMaster_TrainSet.csv'
     output_file = dir +'AutoMaster_TrainSet_cleared.csv'
-    deal2(src_file, output_file)
+    #deal2(src_file, output_file)
 
     src_file2 = dir +'AutoMaster_TestSet.csv'
     output_file2 = dir +'AutoMaster_TestSet_cleared.csv'
-    deal2(src_file2, output_file2)
+    #deal2(src_file2, output_file2)
 
     '''
     #生成训练v2w的语料
@@ -352,7 +352,7 @@ if __name__ == '__main__':
     testFile =  dir + 'AutoMaster_TestSet_cleared.csv'
     modelFile = dir +  'fasttext/fasttext_jieba.model'
 
-    vocab, embedding_matrix = util.getEmbedding_matrixFromModel(modelFile)
+    vocab, reverse_vocab, embedding_matrix   = util.getEmbedding_matrixFromModel(modelFile)
 
     train_x_pad_path =dir + 'AutoMaster_Train_X_jieba.csv'
     train_y_pad_path = dir + 'AutoMaster_Train_Y_jieba.csv'

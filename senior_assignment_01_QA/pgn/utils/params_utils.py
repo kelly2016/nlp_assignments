@@ -3,8 +3,6 @@
 
 import argparse
 
-from utils.config import vocab_path, train_x_seg_path, train_y_seg_path, test_x_seg_path
-
 
 def get_params():
     parser = argparse.ArgumentParser()
@@ -57,16 +55,16 @@ def get_params():
     return params
 
 
-def get_default_params():
-    vocab, reverse_vocab, embedding_matrix = getEmbedding_matrixFromModel(embeddingModelFile)
+def get_default_params(vocab, embedding_matrix):
+
     vocab_size = len(vocab)
     #x_max_len = 518 ,train_y_max_len = 46
+
     params = {'mode': 'train',
               'max_enc_len': 518,
               'max_dec_len': 46,
               'batch_size': 8,
               'epochs': 20,
-              'vocab_path': vocab_path,
               'learning_rate': 0.015,
               'adagrad_init_acc': 0.1,
               'max_grad_norm': 0.8,
@@ -76,14 +74,9 @@ def get_default_params():
               'enc_units': 1024,
               'dec_units': 1024,
               'attn_units': 256,
-              'train_seg_x_dir': train_x_seg_path,
-              'train_seg_y_dir': train_y_seg_path,
-
               'max_train_steps': 1250,
-              'train_pickle_dir': '/opt/kaikeba/dataset/',
               'save_batch_train_data': False,
               'load_batch_train_data': False,
-              'test_seg_x_dir': test_x_seg_path,
               'min_dec_steps': 4,
               'checkpoints_save_steps': 5}
     return params

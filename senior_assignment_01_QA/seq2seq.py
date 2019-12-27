@@ -96,6 +96,7 @@ class Seq2seq(tf.keras.Model):
 
         if os.path.exists(self.checkpoint_dir+ os.sep + 'checkpoint'):
             self.checkpoint.restore(tf.train.latest_checkpoint(self.checkpoint_dir))
+            print(' continue to train ',(self.checkpoint_dir+ os.sep + 'checkpoint'))
 
 
 
@@ -106,7 +107,7 @@ class Seq2seq(tf.keras.Model):
         :return:
         """
         minloss = float("inf")
-        EPOCHS = 10
+        EPOCHS = 20
         tf.config.experimental_run_functions_eagerly(debug)
         for epoch in range(EPOCHS):
             start = time.time()
@@ -148,7 +149,7 @@ class Seq2seq(tf.keras.Model):
         """
         #context_vector, attention_weights = self.attention(dec_hidden, enc_output)
         #pred, dec_hidden = self.decoder(dec_input, None, None,context_vector)
-        predictions, dec_hidden, attention_weights = self.decoder(dec_input, dec_hidden, enc_output)
+        dec_x, predictions, dec_hidden, attention_weights, context_vector = self.decoder(dec_input, dec_hidden, enc_output)
         return predictions, dec_hidden, attention_weights
 
 
@@ -174,7 +175,7 @@ class Seq2seq(tf.keras.Model):
             # Teacher forcing - feeding the target as the next input
             for t in range(1, targ.shape[1]):
                 # decoder(x, hidden, enc_output)
-                predictions, dec_hidden, _ = self.decoder(dec_input, dec_hidden, enc_output)
+                dec_x, predictions, dec_hidden, attention_weights, context_vector = self.decoder(dec_input, dec_hidden, enc_output)
 
                 tmpLoss = self.loss_function(targ[:, t], predictions)
                 if tmpLoss !=  float('inf'):
@@ -386,10 +387,9 @@ class Seq2seq(tf.keras.Model):
 
 
 
-
-
 if __name__ == '__main__':
     setproctitle.setproctitle('kelly')
+    config_gpu()
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'AutoMaster' + os.sep
     print(dir)
 
@@ -415,10 +415,10 @@ if __name__ == '__main__':
 
 
     modelFile = dir+'checkpoints' + os.sep
-    '''
+
     seq2seq = Seq2seq(type=Seq2seq.TYPE.TRAIN, train_X = train_X,train_Y = train_Y,vocab = vocab, embedding_matrix= embedding_matrix,modelFile=modelFile)
     seq2seq.train(True)
-    
+    '''
     #用greedy预测数据
     sentence = '我 的 帕萨特 烧 机油 怎么办 怎么办 技师 说 你好 请问 你 的 车 跑 了 多少 公里 了 如果 在 保修期 内 可以 到 当地 的 4 店 里面 进行 检查 维修 如果 已经 超出 了 保修期 建议 你 到 当地 的 大型 维修 店 进行 检查 烧 机油 一般 是 发动机 活塞环 间隙 过大 和 气门 油封 老化 引起 的 如果 每 750 0 公里 烧一升 机油 的话 可以 在 后备箱 备 一些 机油 以便 机油 报警 时有 机油 及时 补充 如果 超过 两升 或者 两升 以上 建议 你 进行 发动机 检查 维修 技师 说 你好 车主 说 嗯'
     s2s = Seq2seq(type=Seq2seq.TYPE.EVAL, vocab=vocab,

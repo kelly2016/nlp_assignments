@@ -70,7 +70,23 @@ def load_dataset(file,vocab):
     return np.array(ids.tolist())
 
 def config_gpu():
-    ## 获取所有的物理GPU
+    '''
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+        tf.config.experimental.set_visible_devices(gpus[7], 'GPU')
+        try:
+           tf.config.experimental.set_virtual_device_configuration(
+                gpus[7],
+                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4096)])
+           logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+           print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+   #         # Virtual devices must be set before GPUs have been initialized
+           print(e)
+
+   ## 获取所有的物理GPU
+
     gpus = tf.config.experimental.list_physical_devices('GPU')
     if gpus:
         try:
@@ -78,10 +94,25 @@ def config_gpu():
 
                 tf.config.experimental.set_memory_growth(gpu, True)
                 # 获取所有的逻辑GPU
-                logical_gpus = tf.config.experimental.list_logical_devices('GPU')
-                print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
         except RuntimeError as e:
             print(e)
+'''
+    gpus = tf.config.experimental.list_physical_devices('GPU')
+    if gpus:
+        # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
+        tf.config.experimental.set_visible_devices(gpus[6:7], 'GPU')
+        try:
+            tf.config.experimental.set_virtual_device_configuration(
+                gpus[6:7],
+                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=4096)])
+            logical_gpus = tf.config.experimental.list_logical_devices('GPU')
+            print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+        except RuntimeError as e:
+            #         # Virtual devices must be set before GPUs have been initialized
+            print(e)
+     
 
 def getEmbedding_matrix(dictFile,vectorFile):
     """

@@ -100,6 +100,7 @@ def config_gpu():
             print(e)
 '''
     gpus = tf.config.experimental.list_physical_devices('GPU')
+    print('gpus=',gpus)
     if gpus:
         # Restrict TensorFlow to only allocate 1GB of memory on the first GPU
         tf.config.experimental.set_visible_devices(gpus[7:8], 'GPU')
@@ -112,6 +113,9 @@ def config_gpu():
         except RuntimeError as e:
             #         # Virtual devices must be set before GPUs have been initialized
             print(e)
+    #os.environ['CUDA_VISIBLE_DEVICES'] = "7"
+    #print('2gpus=', gpus)
+
      
 
 def getEmbedding_matrix(dictFile,vectorFile):

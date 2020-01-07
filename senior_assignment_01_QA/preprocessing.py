@@ -23,7 +23,6 @@ import pandas as pd
 
 import cutWords
 from cutWords import Analyzer
-from pgn.utils import util
 
 analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=False,useStopwords=False,userdict ='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
 
@@ -313,6 +312,31 @@ def load_dataset(file,vocab):
 
 
 
+def mergeDataset(trainFile,testFile,train_x_pad_path,train_y_pad_path,test_x_pad_path):
+    """
+     格式化好训练的数据集
+    :param trainFile: 训练集
+    :param testFile: 测试集
+    :param vocab: 词表
+    :return:
+    """
+    #读入分好词的数据
+    train_df = pd.read_csv(trainFile, encoding='utf-8', sep=None)
+    test_df = pd.read_csv(testFile, encoding='utf-8', sep=None)
+    #合并训练数据
+    train_df['X'] = train_df[['Question', 'Dialogue']].apply(lambda x: ' '.join(x), axis=1)
+    train_df['Y'] = train_df[['Report']].apply(lambda x: ' '.join(x), axis=1)
+    test_df['X'] = test_df[['Question', 'Dialogue']] .apply(lambda x: ' '.join(x), axis=1)
+
+    #保存中间结果
+    train_df['X'].to_csv(train_x_pad_path, index=None, header=False)
+    train_df['Y'].to_csv(train_y_pad_path, index=None, header=False)
+    test_df['X'].to_csv(test_x_pad_path, index=None, header=False)
+
+    return  train_df,test_df
+
+
+
 if __name__ == '__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep+ 'AutoMaster' + os.sep
@@ -348,13 +372,20 @@ if __name__ == '__main__':
     wirteDict(output_file3,dictFile)
    '''
 
-    trainFile = dir + 'AutoMaster_TrainSet_cleared.csv'
-    testFile =  dir + 'AutoMaster_TestSet_cleared.csv'
+    trainFile = output_file
+    testFile =  output_file2
     modelFile = dir +  'fasttext/fasttext_jieba.model'
 
+    train_x_pad_path = dir + 'AutoMaster_Train_X_cleared.csv'
+    train_y_pad_path = dir + 'AutoMaster_Train_Y_cleared.csv'
+    test_x_pad_path = dir + 'AutoMaster_Test_X_cleared.csv'
+
+    mergeDataset(trainFile, testFile,  train_x_pad_path, train_y_pad_path, test_x_pad_path)
+    '''
     vocab, reverse_vocab, embedding_matrix   = util.getEmbedding_matrixFromModel(modelFile)
 
     train_x_pad_path =dir + 'AutoMaster_Train_X_jieba.csv'
     train_y_pad_path = dir + 'AutoMaster_Train_Y_jieba.csv'
     test_x_pad_path = dir + 'AutoMaster_Test_X_jieba.csv'
     formatDataset(trainFile, testFile, vocab, train_x_pad_path, train_y_pad_path, test_x_pad_path)
+    '''

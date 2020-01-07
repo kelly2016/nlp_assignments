@@ -9,7 +9,7 @@ from enum import Enum
 
 from beamSearch import *
 from layer import Encoder, Decoder
-from pgn.utils.util import *
+from pgn_pack.utils.util import *
 
 
 class Seq2seq(tf.keras.Model):
@@ -121,7 +121,7 @@ class Seq2seq(tf.keras.Model):
                 batch_loss = self.train_step(inp, targ, enc_hidden)
                 total_loss += batch_loss
 
-                if batch % 1 == 0:
+                if batch % 10 == 0:
                     print('Epoch {} Batch {} Loss {:.4f}'.format(epoch + 1,
                                                                  batch,
                                                                  batch_loss.numpy()))
@@ -133,6 +133,7 @@ class Seq2seq(tf.keras.Model):
                 self.checkpoint.save(file_prefix=self.checkpoint_prefix)
                 print('Epoch {} Loss {:.4f}'.format(epoch + 1, minloss))
             print('Time taken for 1 epoch {} sec\n'.format(time.time() - start))
+            epoch = epoch+1
 
     def call_encoder(self, enc_inp):
         enc_hidden = self.encoder.initialize_hidden_state()
@@ -388,6 +389,10 @@ class Seq2seq(tf.keras.Model):
 
 
 if __name__ == '__main__':
+    x = 1.0
+    for x in range(25):
+        y = (85 - x * 3.5)/2.5
+        print('x = {} , y = {}, {} + {}  = {}'.format(x,y,x*3.5,y*2.5,(x*3.5+y*2.5)))
 
     setproctitle.setproctitle('kelly')
     config_gpu()
@@ -417,7 +422,7 @@ if __name__ == '__main__':
 
     modelFile = dir+'checkpoints' + os.sep
 
-    seq2seq = Seq2seq(type=Seq2seq.TYPE.TRAIN, train_X = train_X,train_Y = train_Y,vocab = vocab, embedding_matrix= embedding_matrix,modelFile=modelFile)
+    seq2seq = Seq2seq(type=Seq2seq.TYPE.TRAIN, train_X = train_X,train_Y = train_Y,vocab = vocab, embedding_matrix= embedding_matrix,modelFile=modelFile,BATCH_SIZE=32)
     seq2seq.train(True)
     '''
     #用greedy预测数据

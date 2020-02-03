@@ -5,7 +5,7 @@
 # @File    : preprocess.py
 # @Description:
 
-i
+
 import multiprocessing
 import os
 import setproctitle
@@ -23,7 +23,10 @@ analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=True,useStopwords=True)
 
 
 
-def preprocess(string):
+def preprocess2(string):
+    return preprocess(string,flag = 2)
+
+def preprocess(string,flag = 1):
     """
     和业务相关的字符串处理
     :param str:
@@ -31,8 +34,18 @@ def preprocess(string):
     """
     if string is  None or  type(string) != str or len(string) == 0:
         return ' '
-    words = analyzer.cut2list(string.replace('[知识点：]','').replace('【考点精析】','').replace('[题目]','').replace('\t','').replace('\n','').replace('|','。').replace('【解答】',' ').replace(',','，'))#。这么做是因为ltp的切词好怪异"。德尔福"在一起
-    return ' '.join(words)
+    content = string.split('[知识点：]')
+
+    if flag == 1:
+        item = analyzer.cut2list(content[0].replace('知识点','').replace('【考点精析】','').replace('[题目]','').replace('\t','').replace('\n','').replace('|','。').replace('【解答】','').replace(',','，').replace(',',""))#。这么做是因为ltp的切词好怪异"。德尔福"在一起
+        return ' '.join(item)
+    elif flag == 2:
+        if len(content) < 2:
+            return ' '
+        knowledge =  analyzer.cut2list(content[1])
+        return' '.join(knowledge)
+
+
 
 def parallelize(df,func):
     """
@@ -52,7 +65,9 @@ def parallelize(df,func):
     return data
 
 def data_fram_proc(df):
-    df['item'] = df['item'].apply(preprocess)
+    df['items']= df['item'].apply(preprocess)
+    df['knowledge'] = df['item'].apply(preprocess2)
+
     return df
 
 def preprocessing(path,ratio=0.8):
@@ -73,20 +88,22 @@ def preprocessing(path,ratio=0.8):
            for file2 in dirs2:
                 file3 = os.path.join(path2, file2)
                 print(file3)
-                if os.path.isfile(file3) and  file2.endswith('.csv'):
+                if os.path.isfile(file3) and  file2.endswith('.csv') and not file2.endswith('_cleaned.csv'):
                     src_df = pd.read_csv(file3)
 
                     src_df.replace(to_replace=r'^\s*$', value=np.nan, regex=True, inplace=True)
                     src_df.dropna(subset=['item'], how='any', inplace=True)
                     src_df = parallelize(src_df, data_fram_proc)
                     src_df.replace(to_replace=r'^\s*$', value=np.nan, regex=True, inplace=True)
-                    src_df.dropna(subset=['item'], how='any', inplace=True)
-                    merged_df = pd.concat([src_df['item']], axis=0)
+                    src_df.dropna(subset=['items'], how='any', inplace=True)
+                    #merged_df = pd.concat([src_df['items'],src_df['knowledge']], axis=0)
+                    merged_df  = src_df.loc[:,["items","knowledge"]]
                     name = file2.split('.')[0]
                     merged_df.to_csv(os.path.join(path2, name+'_cleaned.csv'), index=None, header=True)
 
 
+
 if __name__=='__main__':
     setproctitle.setproctitle('kelly')
-    dir  = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'KnowledgeLabel' + os.sep+'corpus' + os.sep
+    dir  = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'KnowledgeLabel' + os.sep+'corpus2' + os.sep
     preprocessing(dir)

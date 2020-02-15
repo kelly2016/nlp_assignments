@@ -78,7 +78,7 @@ class CustomModelCheckpoint(keras.callbacks.Callback):
         self.model = model
         self.path = path
         self.monitor_index = monitor_index
-        self.best_acc = 0.70
+        self.best_acc = 0.10
 
     def on_epoch_end(self, epoch, logs=None):
         val_acc = logs[self.monitor_index]
@@ -190,11 +190,11 @@ class TextCNN(object):
             plt.show()
 
 
-        def predict(self, lb, X_test, y_test=None, isMulti=False):
+        def predict(self, lb, X_test, y_test=None):
             assert os.path.exists(self.best_model_file), 'Keras model {} does not exist'.format(self.best_model_file)
 
             y_pred = self.model.predict(X_test)
-            if isMulti == False:
+            if self.isMulti == False:
                 #np.where(y_pred == np.max(y_pred, axis=1)）
                 print('test-----------')
                 print(lb.inverse_transform(y_test))
@@ -262,7 +262,8 @@ if __name__=='__main__':
     label = 'multiLabels'
     lb,num_classes, X_train, X_test, y_train, y_test = preprocess(file, label, isMulti=True)
     textcnn = TextCNN(best_model_file=best_model_file,classes_dim=num_classes,  kernel_sizes=[2, 3, 4],isMulti=True)
-    textcnn.train(X_train, y_train, X_test, y_test)
+    textcnn.train(X_train, y_train, X_test, y_test )
+    textcnn.predict(lb=lb, X_test=X_test, y_test=y_test )
 
 
 

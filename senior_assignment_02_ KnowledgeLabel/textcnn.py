@@ -28,6 +28,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
 from utils.plot_utils import plot_confusion_matrix
+from utils.util import format
 
 cores = multiprocessing.cpu_count()
 partitions = cores
@@ -94,11 +95,13 @@ class TextCNN(object):
         3.max-pooling,
         4.softmax layer.
         """
-        def __init__(self,classes_dim,embedding_dim=embed_size,max_token_num=vocab_size,embedding_matrix = None,model_img_path = False,best_model_file = None,isMulti = False,filter_sizes=filter_sizes,kernel_sizes = [2, 3, 4],max_sequence_length=padding_size):
+        def __init__(self,classes_dim,best_model_file,embedding_dim=embed_size,max_token_num=vocab_size,embedding_matrix = None,model_img_path = False,isMulti = False,filter_sizes=filter_sizes,kernel_sizes = [2, 3, 4],max_sequence_length=padding_size):
             self.isMulti = isMulti
-            if best_model_file is not None:
-                model_path = os.path.expanduser(best_model_file)
-                assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
+            self.best_model_file = best_model_file
+            model_path = os.path.expanduser(self.best_model_file)
+            assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
+
+            if os.path.exists(self.best_model_file) :
                 self.model = load_model(model_path, compile=False)
             else:
 
@@ -138,7 +141,7 @@ class TextCNN(object):
             print(self.model.summary())
 
 
-        def train(self,X_train,y_train,X_test,y_test,best_model_file):
+        def train(self,X_train,y_train,X_test,y_test):
             loss = 'categorical_crossentropy' if self.isMulti == False else 'binary_crossentropy'
             print('loss = ', loss)
             self.model.compile(tf.optimizers.Adam(learning_rate=learning_rate),
@@ -147,7 +150,7 @@ class TextCNN(object):
             print('Train...')
             early_stopping = EarlyStopping(monitor='val_micro_f1', patience=10, mode='max')
             reduce_lr = ReduceLROnPlateau(monitor='val_micro_f1', factor=0.5, patience=5 , verbose=1,min_lr=0.001 )
-            best_model = CustomModelCheckpoint(self.model, best_model_file, monitor_index='val_micro_f1')
+            best_model = CustomModelCheckpoint(self.model, self.best_model_file, monitor_index='val_micro_f1')
             print(type(X_train))
             print(type(y_train))
             print(type(X_test))
@@ -188,20 +191,37 @@ class TextCNN(object):
 
 
         def predict(self, lb, X_test, y_test=None, isMulti=False):
+            assert os.path.exists(self.best_model_file), 'Keras model {} does not exist'.format(self.best_model_file)
+
             y_pred = self.model.predict(X_test)
-            y_pred = np.argmax(y_pred, axis=1)
-            y_true = np.argmax(y_test, axis=1)
-            print(classification_report(y_true, y_pred))
             if isMulti == False:
+                #np.where(y_pred == np.max(y_pred, axis=1)）
+                print('test-----------')
+                print(lb.inverse_transform(y_test))
+                print('pred-----------')
+                print(lb.inverse_transform(format(y_pred)))
+
+                y_pred = np.argmax(y_pred, axis=1) #返回沿轴axis最大值的索引。
+                y_true = np.argmax(y_test, axis=1)
+                print(classification_report(y_true, y_pred))
+
                 # 计算混淆矩阵
                 conf_mat = confusion_matrix(y_true, y_pred)
                 # 画混淆矩阵
                 plot_confusion_matrix(conf_mat, classes=[0, 1])
+
+
+            else:
+                y_pred = np.where(y_pred > 0.5, 1, 0)#满足y_pred > 0.5阈值 输出1，否则输出0
                 f1_score(y_test, y_pred, average='samples')
-                lb.inverse_transform(y_pred)
-                lb.inverse_transform(y_test)
+                print('test-----------')
+                print(lb.inverse_transform(y_test))
+                print('pred-----------')
+                print(lb.inverse_transform(y_pred))
 
 
+
+'''
 def predict(model_path,lb,X_test,y_test=None,isMulti = False):
     model_path = os.path.expanduser(model_path)
     assert model_path.endswith('.h5'), 'Keras model or weights must be a .h5 file.'
@@ -218,7 +238,7 @@ def predict(model_path,lb,X_test,y_test=None,isMulti = False):
         f1_score(y_test, y_pred, average='samples')
         lb.inverse_transform(y_pred)
         lb.inverse_transform(y_test)
-
+'''
 
 
 
@@ -229,23 +249,21 @@ if __name__=='__main__':
     best_model_file = dir+'textcnn1.h5'
     model_img_path =  'model.png'
     label = 'label'
-
-
-
+    matrix = np.random.random((4,4))
 
     lb, num_classes,X_train, X_test, y_train, y_test = preprocess(file, label)
 
     textcnn = TextCNN(best_model_file=best_model_file,classes_dim=num_classes,model_img_path =model_img_path,kernel_sizes = [2, 3, 4])
-    textcnn.train(X_train,y_train,X_test,y_test,best_model_file)
-    textcnn.predict(model_path = best_model_file,lb=lb,X_test=X_test,y_test=y_test)
-    #predict(model_path = best_model_file,lb=lb,X_test=X_test,y_test=y_test)
+    #textcnn.train(X_train,y_train,X_test,y_test)
+    textcnn.predict(lb=lb,X_test=X_test,y_test=y_test)
+
 
     best_model_file = dir + 'textcnn2.h5'
     label = 'multiLabels'
     lb,num_classes, X_train, X_test, y_train, y_test = preprocess(file, label, isMulti=True)
     textcnn = TextCNN(best_model_file=best_model_file,classes_dim=num_classes,  kernel_sizes=[2, 3, 4],isMulti=True)
-    textcnn.train(X_train, y_train, X_test, y_test, best_model_file)
-    #predict(model_path = best_model_file,lb=lb,X_test=X_test,y_test=y_test,isMulti = True)
+    textcnn.train(X_train, y_train, X_test, y_test)
+
 
 
 

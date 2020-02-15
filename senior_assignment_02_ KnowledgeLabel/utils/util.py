@@ -11,6 +11,27 @@ import setproctitle
 import numpy as np
 
 
+def format(matrix):
+    """
+    matrix矩阵，NumPy数组中，沿轴1将最大值设置为1，其余值设置为零:
+    [[0.36659517 0.4424879  0.96776616 0.69099763]
+ [0.11664181 0.12562079 0.18756865 0.37555337]
+ [0.36661335 0.37456415 0.73158797 0.31750937]
+ [0.67948714 0.03370266 0.5097918  0.65935103]]
+ 转为
+[[0. 0. 1. 0.]
+ [0. 0. 0. 1.]
+ [0. 0. 1. 0.]
+ [1. 0. 0. 0.]]
+    :param matrix:
+    :return
+    """
+    out = np.zeros(matrix.shape)
+    idx = matrix.argmax(axis=1)
+    out[np.arange(matrix.shape[0]) ,idx] = 1
+    return out
+
+
 def get_max_len(data):
     """
     获得合适的最大长度值

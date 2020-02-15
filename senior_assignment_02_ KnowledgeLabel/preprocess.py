@@ -22,6 +22,8 @@ analyzer = Analyzer(Analyzer.ANALYZERS.Jieba,replaceP=True,useStopwords=True)
 
 
 
+def preprocess3(string):
+    return preprocess(string,flag = 3)
 
 def preprocess2(string):
     return preprocess(string,flag = 2)
@@ -44,6 +46,14 @@ def preprocess(string,flag = 1):
             return ' '
         knowledge =  analyzer.cut2list(content[1])
         return' '.join(knowledge)
+    elif flag ==3:
+        if len(content) < 2:
+            return ' '
+
+        content[1]
+        label =  content[1].replace('，',',') .split(',')
+        return' '.join(label)
+
 
 
 
@@ -64,11 +74,17 @@ def parallelize(df,func):
     pool.join()
     return data
 
+
 def data_fram_proc(df):
     df['items']= df['item'].apply(preprocess)
     df['knowledge'] = df['item'].apply(preprocess2)
+    df['label'] = df['item'].apply(preprocess3)
 
     return df
+
+
+
+
 
 def preprocessing(path,ratio=0.8):
     """
@@ -97,7 +113,7 @@ def preprocessing(path,ratio=0.8):
                     src_df.replace(to_replace=r'^\s*$', value=np.nan, regex=True, inplace=True)
                     src_df.dropna(subset=['items'], how='any', inplace=True)
                     #merged_df = pd.concat([src_df['items'],src_df['knowledge']], axis=0)
-                    merged_df  = src_df.loc[:,["items","knowledge"]]
+                    merged_df  = src_df.loc[:,["items","knowledge","label"]]
                     name = file2.split('.')[0]
                     merged_df.to_csv(os.path.join(path2, name+'_cleaned.csv'), index=None, header=True)
 

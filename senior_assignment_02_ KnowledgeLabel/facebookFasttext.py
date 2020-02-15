@@ -45,8 +45,8 @@ def train_supervised(train_data_path,test_data_path,modelfile,isQuantize = True)
     print(model.predict("社会主义是中国人民的历史性选择,发展中国特色社会主义文化"))
     result = model.test(test_data_path)
     print("P@1:", result.p)  # 准确率
-    print("R@2:", result.recall)  # 召回率
-    print("Number of examples:", result.nexamples)  # 预测错的例子
+    print("R@2:", result.r)  # 召回率
+
 
     print_results(*model.test(test_data_path))
     if isQuantize is True:

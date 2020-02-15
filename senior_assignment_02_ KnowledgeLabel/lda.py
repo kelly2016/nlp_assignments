@@ -25,6 +25,7 @@ def preprocess(string):
     :param str:
     :return:
     """
+    #s
     return str(string)+' '+str(string)+' '+str(string)
 
 
@@ -126,6 +127,7 @@ class LDAModel(object):
             x_list = []
             item_x = []
             labels = []
+            multiLabels = []
             label11 = 0
 
             for file in dirs:
@@ -140,7 +142,7 @@ class LDAModel(object):
                         if os.path.isfile(file3) and file2.endswith('_cleaned.csv'):
                             print('class {}{} : {}{}'.format(file, file2, label11, label12))
                             src_df = pd.read_csv(file3)
-                            src_df = parallelize(src_df, data_fram_proc)
+                            src_df = parallelize(src_df, data_fram_proc) #上采样
 
                             #merged_df = pd.concat([src_df['items'], src_df['knowledge']], axis=1)
                             src_df['item'] = src_df['items'] + src_df['knowledge']
@@ -148,12 +150,17 @@ class LDAModel(object):
                             item_x += x
                             x = [[word for word in doc.split(' ') if word != "" ] for  doc in x]
                             x_list+= x # list
-                            labels += ['__label__'+str(label11)+''+str(label12) for i in range(len(x))]
+                            #labels += ['__label__'+str(label11)+''+str(label12) for i in range(len(x))]
+                            fn = str(file2).replace('_cleaned.csv','').replace('\t','').replace('\n','')
+                            labels += ['__label__' + str(file) + '_' + fn  for i in range(len(x))]
                             bug = 0
+                            mls = np.array(src_df['label']).tolist()
+                            multiLabels += [ str(file).replace('_',' ') +' '+fn+' '+  str(ml).replace('\t','').replace('\n','') for ml in mls ]
+                            bug = 1
                         label12 += 1
                 label11 += 1
 
-            c = {'label': labels,'item': item_x}  # 合并成一个新的字典c
+            c = {'label': labels,'item': item_x,'multiLabels':multiLabels}  # 合并成一个新的字典c
             df = pd.DataFrame(c)  # 将c传入DataFrame并创建
             df.to_csv(corpus_file, index=None,  header=True)
 
@@ -174,6 +181,7 @@ class LDAModel(object):
             self.lda.save(model_file)
 
             self.dictionary.save_as_text(dictionary_file)
+
 
     def __retrain(self, model_file,other_texts):
            """
@@ -206,10 +214,10 @@ def saveLDACorpus(train_data_path,test_data_path,model_file,dictionary_file,corp
         dictionary = Dictionary.load_from_text(dictionary_file)
         dictionary.id2token = utils.revdict(dictionary.token2id)
         src_df = pd.read_csv(corpus_file)
-        #src_df = parallelize(src_df, data_fram_proc1,dictionary ,lda)
-        train_data, test_data = train_test_split(src_df[['label', 'item']], test_size=0.2, random_state=42)
-        train_data.to_csv(train_data_path, index=None, header=None, sep=' ')
-        test_data.to_csv(test_data_path, index=None, header=None, sep=' ')
+        src_df = parallelize(src_df, data_fram_proc1,dictionary ,lda) #计入ida特征
+        train_data, test_data = train_test_split(src_df[['label','multiLabels','item']], test_size=0.2, random_state=42)
+        train_data.to_csv(train_data_path,  index=None )#, header=None
+        test_data.to_csv(test_data_path, index=None )#, header=None
 
 if __name__=='__main__':
     setproctitle.setproctitle('kelly')

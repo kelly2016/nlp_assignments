@@ -254,7 +254,7 @@ if __name__=='__main__':
     lb, num_classes,X_train, X_test, y_train, y_test = preprocess(file, label)
 
     textcnn = TextCNN(best_model_file=best_model_file,classes_dim=num_classes,model_img_path =model_img_path,kernel_sizes = [2, 3, 4])
-    #textcnn.train(X_train,y_train,X_test,y_test)
+    textcnn.train(X_train,y_train,X_test,y_test)
     textcnn.predict(lb=lb,X_test=X_test,y_test=y_test)
 
 

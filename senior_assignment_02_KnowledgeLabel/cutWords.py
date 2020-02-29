@@ -12,6 +12,7 @@ from enum import Enum
 from functools import lru_cache
 
 import jieba
+
 import pyltpAnalyzer
 
 #标点符号punctuation

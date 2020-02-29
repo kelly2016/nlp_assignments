@@ -13,7 +13,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import tensorflow as tf
-import utils.metrics as metrics
 from sklearn.metrics import classification_report, confusion_matrix
 from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
@@ -27,6 +26,8 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.preprocessing.text import Tokenizer
+
+import utils.metrics as metrics
 from utils.plot_utils import plot_confusion_matrix
 from utils.util import format
 
@@ -251,11 +252,10 @@ if __name__=='__main__':
     label = 'label'
     matrix = np.random.random((4,4))
 
-    lb, num_classes,X_train, X_test, y_train, y_test = preprocess(file, label)
-
-    textcnn = TextCNN(best_model_file=best_model_file,classes_dim=num_classes,model_img_path =model_img_path,kernel_sizes = [2, 3, 4])
-    textcnn.train(X_train,y_train,X_test,y_test)
-    textcnn.predict(lb=lb,X_test=X_test,y_test=y_test)
+    #lb, num_classes,X_train, X_test, y_train, y_test = preprocess(file, label)
+    #textcnn = TextCNN(best_model_file=best_model_file,classes_dim=num_classes,model_img_path =model_img_path,kernel_sizes = [2, 3, 4])
+    #textcnn.train(X_train,y_train,X_test,y_test)
+    #textcnn.predict(lb=lb,X_test=X_test,y_test=y_test)
 
 
     best_model_file = dir + 'textcnn2.h5'

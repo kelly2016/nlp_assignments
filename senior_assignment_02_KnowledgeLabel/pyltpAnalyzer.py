@@ -8,14 +8,6 @@
 
 
 #分词
-import os
-from pyltp import SentenceSplitter
-from pyltp import Segmentor
-from pyltp import Postagger
-from pyltp import NamedEntityRecognizer
-from pyltp import Parser
-import numpy as np
-import re
 # 分词
 import os
 import re
@@ -26,6 +18,17 @@ from pyltp import Segmentor
 from pyltp import SentenceSplitter
 
 import numpy as np
+# 分词
+# 分词
+import os
+import re
+
+import numpy as np
+from pyltp import NamedEntityRecognizer
+from pyltp import Parser
+from pyltp import Postagger
+from pyltp import Segmentor
+from pyltp import SentenceSplitter
 
 print('------------------------###########')
 LTP_DATA_DIR = '/Users/henry/Documents/application/newsExtract/news/data/ltp_data/'  # ltp模型目录的路径

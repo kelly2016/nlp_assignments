@@ -11,7 +11,7 @@ python3 /root/private/kelly/bert/run_multilabel_classifier.py \
 --vocab_file=$BERT_BASE_DIR/vocab.txt \
 --bert_config_file=$CODEDIR/congfig/bert_config.json \
 --output_dir=$MY_DATASET/output \
---init_checkpoint=$MY_DATASET/output/ \
+--init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt  \
 --max_seq_length=128 >nohup_predict.out &
 
 

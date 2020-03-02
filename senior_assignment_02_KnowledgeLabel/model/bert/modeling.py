@@ -245,11 +245,15 @@ class BertModel(object):
     return self.sequence_output
 
   def get_all_encoder_layers(self):
+    """
+    获取所有编码层
+    :return:
+    """
     return self.all_encoder_layers
 
   def get_embedding_output(self):
     """Gets output of the embedding lookup (i.e., input to the transformer).
-
+    前面embedding层
     Returns:
       float Tensor of shape [batch_size, seq_length, hidden_size] corresponding
       to the output of the embedding layer, after summing the word

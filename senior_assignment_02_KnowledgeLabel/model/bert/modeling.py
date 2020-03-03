@@ -237,7 +237,7 @@ class BertModel(object):
 
   def get_sequence_output(self):
     """Gets final hidden layer of encoder.
-
+获取每个单词的词向量的时候注意，头尾是[CLS]和[SEP]的向量。做NER或seq2seq的时候需要注意。
     Returns:
       float Tensor of shape [batch_size, seq_length, hidden_size] corresponding
       to the final hidden of the transformer encoder.

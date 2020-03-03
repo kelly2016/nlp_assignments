@@ -215,7 +215,7 @@ class KnowledgeLabel_Processor(DataProcessor):
     def load_examples(data_dir):
         with open(os.path.join(data_dir, "token_in.txt"), encoding='utf-8') as token_in_f:
             token_in_list = [seq.replace("\n", '') for seq in token_in_f.readlines()]
-            with open(os.path.join(data_dir, "predicate_out.txt"), encoding='utf-8') as predicate_out_f:
+            with open(os.path.join(data_dir, "predicate_single_out.txt"), encoding='utf-8') as predicate_out_f:
                 #token_in_list = [seq.replace("\n", '') for seq in token_in_f.readlines()]
                 predicate_label_list = [seq.replace("\n", '') for seq in predicate_out_f.readlines()]
                 assert len(token_in_list) == len(predicate_label_list)
@@ -838,6 +838,7 @@ def main(_):
       "mnli": MnliProcessor,
       "mrpc": MrpcProcessor,
       "xnli": XnliProcessor,
+      "knowledgelabel":KnowledgeLabel_Processor
   }
 
   tokenization.validate_case_matches_checkpoint(FLAGS.do_lower_case,
@@ -927,7 +928,12 @@ def main(_):
         seq_length=FLAGS.max_seq_length,
         is_training=True,
         drop_remainder=True)
-    estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
+    #estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
+    # kelly add
+    tensors_to_log = {"train loss": "loss/Mean:0"}
+    logging_hook = tf.estimator.LoggingTensorHook(
+        tensors=tensors_to_log, every_n_iter=1)
+    estimator.train(input_fn=train_input_fn, hooks=[logging_hook], max_steps=num_train_steps)
 
   if FLAGS.do_eval:
     eval_examples = processor.get_dev_examples(FLAGS.data_dir)
@@ -1006,7 +1012,7 @@ def main(_):
 
     result = estimator.predict(input_fn=predict_input_fn)
 
-    output_predict_file = os.path.join(FLAGS.output_dir, "test_results.tsv")
+    output_predict_file = os.path.join(FLAGS.output_dir, "predicate_predict.csv")
     with tf.gfile.GFile(output_predict_file, "w") as writer:
       num_written_lines = 0
       tf.logging.info("***** Predict results *****")

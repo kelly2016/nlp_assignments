@@ -228,7 +228,7 @@ class KnowledgeLabel_Processor(DataProcessor):
     def get_dev_examples(self, data_dir):
         return self.create_example(self.load_examples(os.path.join(data_dir, "valid")), "valid")
 
-    def get_test_examples(self, data_dir):
+    def get_test_examplesget_test_examples(self, data_dir):
         return self.create_example(self.load_examples(os.path.join(data_dir, "test")), "test")
 
     def get_labels(self):
@@ -1029,6 +1029,8 @@ def main(_):
 
 
 if __name__ == "__main__":
+  import setproctitle
+  setproctitle.setproctitle('kelly')
   flags.mark_flag_as_required("data_dir")
   flags.mark_flag_as_required("task_name")
   flags.mark_flag_as_required("vocab_file")

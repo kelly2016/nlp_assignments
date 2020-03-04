@@ -9,6 +9,10 @@ from sklearn.metrics import classification_report, confusion_matrix
 from utils.plot_utils import plot_confusion_matrix
 from sklearn.metrics import f1_score
 
+import setproctitle
+
+setproctitle.setproctitle('kelly_multi')
+
 isMulti = True
 
 mlb = MultiLabelBinarizer()

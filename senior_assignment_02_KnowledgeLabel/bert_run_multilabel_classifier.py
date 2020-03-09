@@ -837,7 +837,7 @@ def main(_):
                     score_value_writer.write(output_line_score_value)
                     num_written_lines += 1
         assert num_written_lines == num_actual_predict_examples
-
+        print("predicate_predict.csv is written ")
 
 if __name__ == "__main__":
     import setproctitle

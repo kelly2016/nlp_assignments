@@ -10,7 +10,6 @@ import setproctitle
 import matplotlib.pyplot as plt
 from sklearn.metrics import classification_report, confusion_matrix
 from tensorflow.keras import Input, Model
-from tensorflow.keras import preprocessing
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.layers import Embedding, GlobalAveragePooling1D, Dense
 
@@ -96,4 +95,3 @@ class FastText(object):
 if __name__=='__main__':
     setproctitle.setproctitle('kelly')
     dir  = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'KnowledgeLabel' + os.sep+'corpus' + os.sep
-    preprocessing(dir)

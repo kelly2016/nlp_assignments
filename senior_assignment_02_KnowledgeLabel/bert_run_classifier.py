@@ -228,7 +228,7 @@ class KnowledgeLabel_Processor(DataProcessor):
     def get_dev_examples(self, data_dir):
         return self.create_example(self.load_examples(os.path.join(data_dir, "valid")), "valid")
 
-    def get_test_examplesget_test_examples(self, data_dir):
+    def get_test_examples(self, data_dir):
         return self.create_example(self.load_examples(os.path.join(data_dir, "test")), "test")
 
     def get_labels(self):
@@ -735,6 +735,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
         predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
         accuracy = tf.metrics.accuracy(
             labels=label_ids, predictions=predictions, weights=is_real_example)
+        print('label_ids= {} ,predictions = {}'.format(label_ids,predictions))
         loss = tf.metrics.mean(values=per_example_loss, weights=is_real_example)
         return {
             "eval_accuracy": accuracy,
@@ -1011,7 +1012,7 @@ def main(_):
         drop_remainder=predict_drop_remainder)
 
     result = estimator.predict(input_fn=predict_input_fn)
-
+    print("1 predicate_predict.csv is written ")
     output_predict_file = os.path.join(FLAGS.output_dir, "predicate_predict.csv")
     with tf.gfile.GFile(output_predict_file, "w") as writer:
       num_written_lines = 0
@@ -1023,9 +1024,12 @@ def main(_):
         output_line = "\t".join(
             str(class_probability)
             for class_probability in probabilities) + "\n"
+
         writer.write(output_line)
         num_written_lines += 1
+    print("2 predicate_predict.csv is written ")
     assert num_written_lines == num_actual_predict_examples
+    print("predicate_predict.csv is written ")
 
 
 if __name__ == "__main__":

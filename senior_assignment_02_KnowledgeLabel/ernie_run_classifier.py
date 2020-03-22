@@ -40,10 +40,14 @@ from model.ernie.utils.init import init_pretraining_params, init_checkpoint
 from model.ernie.utils.cards import get_cards
 from model.ernie.finetune_args import parser
 
+
 args = parser.parse_args()
+
+logging.basicConfig(level=logging.INFO,
+                    filename='log.txt',
+                    filemode='w',
+                    format='%(asctime)s - %(filename)s[line:%(lineno)d] - %(levelname)s: %(message)s')
 log = logging.getLogger()
-
-
 def main(args):
     ernie_config = ErnieConfig(args.ernie_config_path)
     ernie_config.print_config()
@@ -239,17 +243,18 @@ def main(args):
                 use_cuda=args.use_cuda,
                 main_program=test_prog,
                 share_vars_from=train_exe)
-
+    current_epoch = 0
+    steps = 0
     if args.do_train:
         train_pyreader.start()
-        steps = 0
+        #steps = 0
         if warmup_steps > 0:
             graph_vars["learning_rate"] = scheduled_lr
 
         ce_info = []
         time_begin = time.time()
         last_epoch = 0
-        current_epoch = 0
+        #current_epoch = 0
         while True:
             try:
                 steps += 1
@@ -285,6 +290,9 @@ def main(args):
                             (current_epoch, current_example, num_train_examples,
                              steps, outputs["loss"], outputs["accuracy"],
                              args.skip_steps / used_time))
+                        print(
+                            "epoch: {}, progress: {}/{}, step: {}, ave loss: {}, ave acc: {}, speed: {} steps/s".format(current_epoch,current_example, num_train_examples, steps, outputs["loss"], outputs["accuracy"],args.skip_steps / used_time))
+
                         ce_info.append(
                             [outputs["loss"], outputs["accuracy"], used_time])
                     if args.is_regression:
@@ -417,7 +425,8 @@ def predict_wrapper(args, reader, exe, test_prog, test_pyreader, graph_vars,
                 dev_count=1,
                 shuffle=False))
 
-        save_path = save_f + '.' + str(epoch) + '.' + str(steps)
+        #save_path = save_f + '.' + str(epoch) + '.' + str(steps)
+        save_path = save_f  +'result'+ str(epoch) + '_' + str(steps)+ '.txt'
         log.info("testing {}, save to {}".format(test_f, save_path))
         qids, preds, probs = predict(
             exe,
@@ -434,10 +443,13 @@ def predict_wrapper(args, reader, exe, test_prog, test_pyreader, graph_vars,
         with open(save_path, 'w') as f:
             if len(qids) == 0:
                 for s, p in zip(preds, probs):
-                    f.write('{}\t{}\n'.format(s, p))
+                    f.write('{}\t{}\n'.format(int(s), p))
+                    print('{}\t{}\n'.format(int(s), p))
             else:
                 for id, s, p in zip(qids, preds, probs):
                     f.write('{}\t{}\t{}\n'.format(id, s, p))
+                    print('{}\t{}\t{}\n'.format(id, s, p))
+        f.close()
 
 
 if __name__ == '__main__':

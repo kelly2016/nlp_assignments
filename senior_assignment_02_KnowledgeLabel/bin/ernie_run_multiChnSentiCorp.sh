@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 set -eux
 
 export FLAGS_eager_delete_tensor_gb=0

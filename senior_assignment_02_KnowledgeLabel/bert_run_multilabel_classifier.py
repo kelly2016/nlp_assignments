@@ -29,6 +29,7 @@ import tensorflow as tf
 from model.bert import modeling
 from model.bert import optimization
 from model.bert import tokenization
+import pickle
 
 flags = tf.flags
 
@@ -283,6 +284,15 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     for (i, label) in enumerate(label_list):
         label_map[label] = i
 
+    # --- save label2id.pkl ---
+    # 在这里输出label2id.pkl , add by kelly
+    output_label2id_file = os.path.join(FLAGS.output_dir, "label2id.pkl")
+    if not os.path.exists(output_label2id_file):
+        with open(output_label2id_file, 'wb') as w:
+            pickle.dump(label_map, w)
+
+    # --- Add end ---
+
     tokens_a = example.text_a.split(" ")
     tokens_b = None
     if example.text_b:
@@ -320,6 +330,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     segment_ids = []
     tokens.append("[CLS]")
     segment_ids.append(0)
+
     for token in tokens_a:
         tokens.append(token)
         segment_ids.append(0)

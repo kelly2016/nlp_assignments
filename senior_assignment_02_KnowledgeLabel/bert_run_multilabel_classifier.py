@@ -264,7 +264,8 @@ def predicate_label_to_id(predicate_label, predicate_label_map):
     predicate_label_map_length = len(predicate_label_map)
     predicate_label_ids = [0] * predicate_label_map_length
     for label in predicate_label:
-        predicate_label_ids[predicate_label_map[label]] = 1
+        index = predicate_label_map[label]
+        predicate_label_ids[index] = 1
     return predicate_label_ids
 
 
@@ -293,7 +294,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
 
     # --- Add end ---
 
-    tokens_a = example.text_a.split(" ")
+    tokens_a = example.text_a.split(" ")#tokens_a = tokenizer.tokenize(example.text_a)#
     tokens_b = None
     if example.text_b:
         tokens_b = tokenizer.tokenize(example.text_b)
@@ -513,10 +514,22 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
         logits = tf.nn.bias_add(logits_wx, output_bias)
 
         probabilities = tf.sigmoid(logits)
-        label_ids = tf.cast(labels, tf.float32)
-        per_example_loss = tf.reduce_sum(
-            tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=label_ids), axis=-1)
-        loss = tf.reduce_mean(per_example_loss)
+        """
+         label_ids = tf.cast(labels, tf.float32)
+            per_example_loss = tf.reduce_sum(
+                tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=label_ids), axis=-1)
+            loss = tf.reduce_mean(per_example_loss)
+        """
+        #kelly add
+        if labels is not None:
+            label_ids = tf.cast(labels, tf.float32)
+            per_example_loss = tf.reduce_sum(
+                tf.nn.sigmoid_cross_entropy_with_logits(logits=logits, labels=label_ids), axis=-1)
+            loss = tf.reduce_mean(per_example_loss)
+
+        else:
+            loss, per_example_loss = None, None
+
 
         return loss, per_example_loss, logits, probabilities
 
@@ -611,7 +624,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                     label_id_ = tf.cast(label_ids_split[j], dtype=tf.int32)
                     current_auc, update_op_auc = tf.metrics.auc(label_id_, logits)
                     eval_dict[('eval_auc ' + str(j))] = (current_auc, update_op_auc)
-                    #
+                    #      要                                                                                                                                                                                                                                  777yyyyttty
                     precision = tf.metrics.precision(labels=label_id_, predictions=logits)
                     eval_dict[('eval_precision ' + str(j))] = precision
 

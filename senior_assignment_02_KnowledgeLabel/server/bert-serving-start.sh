@@ -1,0 +1,1 @@
+nohup  bert-serving-start -model_dir=/root/private/kelly/data/chinese_L-12_H-768_A-12/  -tuned_model_dir=/root/private/kelly/data/KnowledgeLabel/corpus2/output/ -ckpt_name=model.ckpt-2000 -num_worker=1 -show_tokens_to_client -max_seq_len=128 -http_port=12547 -cpu -port=12544 -port_out=12546  >nohup_sever.out &

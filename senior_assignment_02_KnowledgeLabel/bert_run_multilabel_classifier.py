@@ -801,6 +801,7 @@ def main(_):
                 tf.logging.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
+
     if FLAGS.do_predict:
         predict_examples = processor.get_test_examples(FLAGS.data_dir)
         num_actual_predict_examples = len(predict_examples)
@@ -832,6 +833,27 @@ def main(_):
             drop_remainder=predict_drop_remainder)
 
         result = estimator.predict(input_fn=predict_input_fn)
+
+        """=========================EXPORT MODEL========================"""
+
+        def serving_input_receiver_fn():
+            """An input receiver that expects a serialized tf.Example."""
+            reciever_tensors = {
+                "input_ids": tf.placeholder(dtype=tf.int64,
+                                            shape=[1, FLAGS.max_seq_length])
+            }
+            features = {
+                "input_ids": reciever_tensors['input_ids'],
+                "input_mask": 1 - tf.cast(tf.equal(reciever_tensors['input_ids'], 0), dtype=tf.int64),
+                "segment_ids": tf.zeros(dtype=tf.int64,
+                                        shape=[1, FLAGS.max_seq_length]),
+                'label_ids': tf.zeros(dtype=tf.int64, shape=[1, 1])
+            }
+            return tf.estimator.export.ServingInputReceiver(features, reciever_tensors)
+
+        estimator._export_to_tpu = False
+        estimator.export_savedmodel(FLAGS.export_model_dir, serving_input_receiver_fn)
+        """=========================EXPORT MODEL========================"""
 
         output_score_value_file = os.path.join(FLAGS.output_dir, "predicate_score_value.txt")
         output_predicate_predict_file = os.path.join(FLAGS.output_dir, "predicate_predict.txt")

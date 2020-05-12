@@ -75,7 +75,7 @@ class FastText(object):
                  class_num=1,
                  last_activation='sigmoid'):
         self.maxlen = maxlen
-        self.max_features = max_features
+        self.maax_features = max_features
         self.embedding_dims = embedding_dims
         self.class_num = class_num
         self.last_activation = last_activation

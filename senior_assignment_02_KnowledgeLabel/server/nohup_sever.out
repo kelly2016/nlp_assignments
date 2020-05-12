@@ -1,0 +1,40 @@
+usage: /root/miniconda3/envs/py36/bin/bert-serving-start -model_dir=/root/private/kelly/data/chinese_L-12_H-768_A-12/ -tuned_model_dir=/root/private/kelly/data/KnowledgeLabel/corpus2/output/ -ckpt_name=model.ckpt-2000 -num_worker=4 -show_tokens_to_client -max_seq_len=128 -http_port=11071 -cpu -port=11068 -port_out=11070
+                 ARG   VALUE
+__________________________________________________
+           ckpt_name = model.ckpt-2000
+         config_name = bert_config.json
+                cors = *
+                 cpu = True
+          device_map = []
+       do_lower_case = True
+  fixed_embed_length = False
+                fp16 = False
+ gpu_memory_fraction = 0.5
+       graph_tmp_dir = None
+    http_max_connect = 10
+           http_port = 11071
+        mask_cls_sep = False
+      max_batch_size = 256
+         max_seq_len = 128
+           model_dir = /root/private/kelly/data/chinese_L-12_H-768_A-12/
+no_position_embeddings = False
+    no_special_token = False
+          num_worker = 4
+       pooling_layer = [-2]
+    pooling_strategy = REDUCE_MEAN
+                port = 11068
+            port_out = 11070
+       prefetch_size = 10
+ priority_batch_size = 16
+show_tokens_to_client = True
+     tuned_model_dir = /root/private/kelly/data/KnowledgeLabel/corpus2/output/
+             verbose = False
+                 xla = False
+
+
+WARNING: The TensorFlow contrib module will not be included in TensorFlow 2.0.
+For more information, please see:
+  * https://github.com/tensorflow/community/blob/master/rfcs/20180907-contrib-sunset.md
+  * https://github.com/tensorflow/addons
+If you depend on functionality not listed there, please file an issue.
+

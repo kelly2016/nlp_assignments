@@ -18,7 +18,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import codecs
 import collections
 import csv
 import os
@@ -34,6 +33,8 @@ from model.bert import tokenization
 flags = tf.flags
 
 FLAGS = flags.FLAGS
+
+import pickle
 
 ## Required parameters
 flags.DEFINE_string(
@@ -149,7 +150,6 @@ class InputExample(object):
     self.text_b = text_b
     self.label = label
 
-SPACE = ' '
 
 class PaddingInputExample(object):
   """Fake example so the num input examples is a multiple of the batch size.
@@ -216,7 +216,7 @@ class NER_Processor(DataProcessor):
     def __init__(self):
         self.language = "zh"
 
-    '''
+
     @staticmethod
     def loadExamples(file):
         examples = []
@@ -225,63 +225,20 @@ class NER_Processor(DataProcessor):
             sent_, tag_ = [], []
             for (i, line) in enumerate(lines):
                 if line != '\n':
-                    tmp = line.strip().split('\t')
+                    tmp = line.strip().split(' ')
                     if (len(tmp) > 1):
                         guid = "train-%d" % (i)
 
                         text_a = tokenization.convert_to_unicode(re.sub(r'[0-9]+$', "", tmp[0]))
-                        label = tokenization.convert_to_unicode(tmp[1])
+                        label = tokenization.convert_to_unicode(tmp[2])
+                        if label == tokenization.convert_to_unicode("contradictory"):
+                            label = tokenization.convert_to_unicode("contradiction")
                         examples.append(
                             InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
                     else:
-                        print('warning:the {} example is {}'.format(i, line))
+                        print('warning:the {} example is {}'.format(i, tmp))
                 else:
-                    print('2 warning:the {} example is {}'.format(i, line))
-
-        return examples
-    '''
-
-    def _create_example(self, lines, set_type):
-        examples = []
-        for (i, line) in enumerate(lines):
-            guid = "%s-%s" % (set_type, i)
-            text = tokenization.convert_to_unicode(line[1])
-            label = tokenization.convert_to_unicode(line[0])
-            # if i == 0:
-            #     print('label: ', label)
-            examples.append(InputExample(guid=guid, text=text, label=label))
-        return examples
-
-    @staticmethod
-    def loadExamples(file):
-        examples = []
-        with open(file, encoding='utf-8') as fr:
-            words = []
-            labels = []
-            guid = 0
-            lines = fr.readlines()
-            for (i, line) in enumerate(lines):
-                if line == '\n':#一句话结束
-                    assert len(words) == len(labels)
-                    if len(words) < 1:#空格
-                        continue
-
-                    examples.append(
-                        InputExample(guid= "train-%d" % (guid), text_a=SPACE.join(words), text_b=None, label=SPACE.join(labels)))
-                    guid += 1
-                    words = []
-                    labels = []
-
-                else:
-                    tmp = line.strip().split('\t')
-                    if (len(tmp) > 1):
-                        words.append(tokenization.convert_to_unicode(re.sub(r'[0-9]+$', "", tmp[0])))
-                        labels.append(tokenization.convert_to_unicode(tmp[1]))
-
-                    else:
-                        print('warning:the {} example is {}'.format(i, line))
-
-
+                    print('warning:the {} example is {}'.format(i, tmp))
 
         return examples
 
@@ -293,15 +250,14 @@ class NER_Processor(DataProcessor):
         return self.loadExamples(os.path.join(data_dir, "weiboNER_2nd_conll.test"))
 
     def get_test_examples(self, data_dir):
-        return self.loadExamples(os.path.join(data_dir, "weiboNER_2nd_conll.dev"
-                                                        ""))
+        return self.loadExamples(os.path.join(data_dir, "weiboNER_2nd_conll.dev"))
 
     def get_labels(self):
         """
 
         :return:
         """
-        return ['O','I-GPE.NOM','I-GPE.NAM','B-GPE.NOM','B-GPE.NAM','B-PER.NAM','I-PER.NAM','B-PER.NOM','I-PER.NOM','B-LOC.NAM','I-LOC.NAM','B-LOC.NOM','I-LOC.NOM','B-GPE.NAM','I-GPE.NAM','B-ORG.NAM','I-ORG.NAM','B-ORG.NOM','I-ORG.NOM','[CLS]', '[SEP]']
+        return ['O','B-PER.NAM','I-PER.NAM','B-PER.NOM','I-PER.NOM','B-LOC.NAM','I-LOC.NAM','B-LOC.NOM','I-LOC.NOM','B-GPE.NAM','I-GPE.NAM','B-ORG.NAM','I-ORG.NAM','B-ORG.NOM','I-ORG.NOM','[CLS]', '[SEP]']
 
 
 class KnowledgeLabel_Processor(DataProcessor):
@@ -523,36 +479,37 @@ class ColaProcessor(DataProcessor):
     return examples
 
 def getLabel_map(label_list):
-    label2id = {}
-    for (i, label) in enumerate(label_list):
-        label2id[label] = i
+    label_map = {}
+    for (i, label) in enumerate(label_list, 1):
+        label_map[label] = i
         # --- save label2id.pkl ---
         # 在这里输出label2id.pkl , add by kelly
-    id2label = {value: key for key, value in label2id.items()}
+    output_label2id_file = os.path.join(FLAGS.output_dir, "label2id.pkl")
+    if not os.path.exists(output_label2id_file):
+        with open(output_label2id_file, 'wb') as w:
+            pickle.dump(label_map, w)
 
     # --- Add end ---
-    return label2id,id2label
+    return label_map
 
 def convert_single_example(ex_index, example, label_list, max_seq_length,
                            tokenizer):
   """Converts a single `InputExample` into a single `InputFeatures`."""
-  label_map, _ = getLabel_map(label_list)
 
   if isinstance(example, PaddingInputExample):
     return InputFeatures(
         input_ids=[0] * max_seq_length,
         input_mask=[0] * max_seq_length,
         segment_ids=[0] * max_seq_length,
-        label_id= label_map["[SEP]"],
+        label_id=0,
         is_real_example=False)
 
+  label_map = getLabel_map(label_list)
   #label_map = {}
   #for (i, label) in enumerate(label_list):
     #label_map[label] = i
 
   tokens_a = tokenizer.tokenize(example.text_a)
-  label_id = example.label.split(' ')
-
   tokens_b = None
   if example.text_b:
     tokens_b = tokenizer.tokenize(example.text_b)
@@ -566,7 +523,6 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     # Account for [CLS] and [SEP] with "- 2"
     if len(tokens_a) > max_seq_length - 2:
       tokens_a = tokens_a[0:(max_seq_length - 2)]
-      label_id = label_id[0:(max_seq_length - 2)]
 
   # The convention in BERT is:
   # (a) For sequence pairs:
@@ -588,18 +544,14 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
   # the entire model is fine-tuned.
   tokens = []
   segment_ids = []
-  label_ids = []
-
   tokens.append("[CLS]")
   segment_ids.append(0)
-  label_ids.append(label_map["[CLS]"])
-  for i, token in enumerate(tokens_a):
+  for token in tokens_a:
     tokens.append(token)
     segment_ids.append(0)
-    label_ids.append(label_map[label_id[i]])
   tokens.append("[SEP]")
   segment_ids.append(0)
-  label_ids.append(label_map["[SEP]"])
+
   if tokens_b:
     for token in tokens_b:
       tokens.append(token)
@@ -618,14 +570,12 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     input_ids.append(0)
     input_mask.append(0)
     segment_ids.append(0)
-    label_ids.append(label_map["[SEP]"])
 
   assert len(input_ids) == max_seq_length
   assert len(input_mask) == max_seq_length
   assert len(segment_ids) == max_seq_length
-  assert len(label_ids) == max_seq_length
 
-
+  label_id = label_map[example.label]
   if ex_index < 5:
     tf.logging.info("*** Example ***")
     tf.logging.info("guid: %s" % (example.guid))
@@ -634,14 +584,13 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     tf.logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
     tf.logging.info("input_mask: %s" % " ".join([str(x) for x in input_mask]))
     tf.logging.info("segment_ids: %s" % " ".join([str(x) for x in segment_ids]))
-    tf.logging.info("label_ids: %s" % " ".join([str(x) for x in label_ids]))
-
+    tf.logging.info("label: %s (id = %d)" % (example.label, label_id))
 
   feature = InputFeatures(
       input_ids=input_ids,
       input_mask=input_mask,
       segment_ids=segment_ids,
-      label_id=label_ids,
+      label_id=label_id,
       is_real_example=True)
   return feature
 
@@ -667,7 +616,7 @@ def file_based_convert_examples_to_features(
     features["input_ids"] = create_int_feature(feature.input_ids)
     features["input_mask"] = create_int_feature(feature.input_mask)
     features["segment_ids"] = create_int_feature(feature.segment_ids)
-    features["label_ids"] = create_int_feature(feature.label_id)
+    features["label_ids"] = create_int_feature([feature.label_id])
     features["is_real_example"] = create_int_feature(
         [int(feature.is_real_example)])
 
@@ -679,12 +628,12 @@ def file_based_convert_examples_to_features(
 def file_based_input_fn_builder(input_file, seq_length, is_training,
                                 drop_remainder):
   """Creates an `input_fn` closure to be passed to TPUEstimator."""
-#kelly modify
+
   name_to_features = {
       "input_ids": tf.FixedLenFeature([seq_length], tf.int64),
       "input_mask": tf.FixedLenFeature([seq_length], tf.int64),
       "segment_ids": tf.FixedLenFeature([seq_length], tf.int64),
-      "label_ids": tf.FixedLenFeature([seq_length], tf.int64),
+      "label_ids": tf.FixedLenFeature([], tf.int64),
       "is_real_example": tf.FixedLenFeature([], tf.int64),
   }
 
@@ -757,14 +706,14 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids,
   #
   # If you want to use the token-level output, use model.get_sequence_output()
   # instead.
-  #kelly add 获取对应的embedding 输入数据[batch_size, seq_length, embedding_size]
+  #kelly add 获取对应的embedding 输入数据[batch_size, seq_length, embedding_size]  【8，128，768】
   embedding = model.get_sequence_output()# model.get_pooled_output()
   max_seq_length = embedding.shape[1].value #hidden_size = output_layer.shape[-1].value
   # 算序列真实长度
   used = tf.sign(tf.abs(input_ids))#如果x < 0,则有 y = sign(x) = -1；如果x == 0,则有 0 或者tf.is_nan(x)；如果x > 0,则有1.
   lengths = tf.reduce_sum(used, reduction_indices=1)  # [batch_size] 大小的向量，包含了当前batch中的序列长度
   bigru_crf =BIRNN_CRF(embedded_chars=embedding, cell_type=CELL_TYPE.GRU,num_labels=num_labels,
-                       seq_length=max_seq_length, labels=labels, lengths=lengths, is_training=is_training)
+                       seq_lengthh=max_seq_length, labels=labels, lengths=lengths, is_training=is_training)
 
   return bigru_crf. add_birnn_crf_layer()
 
@@ -792,8 +741,8 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
       is_real_example = tf.ones(tf.shape(label_ids), dtype=tf.float32)
 
     is_training = (mode == tf.estimator.ModeKeys.TRAIN)
-
-    (total_loss, logits, trans, predictions) = create_model(
+    #total_loss, logits, trans, pred_ids
+    (total_loss, pred_ids) = create_model(
         bert_config, is_training, input_ids, input_mask, segment_ids, label_ids,
         num_labels, use_one_hot_embeddings)
 
@@ -826,61 +775,37 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
       train_op = optimization.create_optimizer(
           total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu)
-      hook_dict = {}
-      hook_dict['loss'] = total_loss
-      hook_dict['global_steps'] = tf.train.get_or_create_global_step()
-      logging_hook = tf.train.LoggingTensorHook(
-          hook_dict, every_n_iter=10)
 
-      output_spec = tf.estimator.EstimatorSpec(
+      output_spec = tf.contrib.tpu.TPUEstimatorSpec(
           mode=mode,
           loss=total_loss,
           train_op=train_op,
-          training_hooks=[logging_hook])
+          scaffold_fn=scaffold_fn)
     elif mode == tf.estimator.ModeKeys.EVAL:
 
-      #def metric_fn(per_example_loss, label_ids, logits, is_real_example):
-      def metric_fn(label_ids, predictions):
-        #predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
+      def metric_fn(per_example_loss, label_ids, logits, is_real_example):
+        predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
         accuracy = tf.metrics.accuracy(
-            labels=label_ids, predictions=predictions)#, weights=is_real_example)
+            labels=label_ids, predictions=predictions, weights=is_real_example)
         print('label_ids= {} ,predictions = {}'.format(label_ids,predictions))
-        auc = tf.metrics.auc(labels=label_ids, predictions=predictions, weights=is_real_example)
-        precision = tf.metrics.precision(labels=label_ids, predictions=predictions, weights=is_real_example)
-        recall = tf.metrics.recall(labels=label_ids, predictions=predictions, weights=is_real_example)
-
-        loss =  tf.metrics.mean_squared_error(labels=label_ids, predictions=predictions)
+        loss = tf.metrics.mean(values=per_example_loss, weights=is_real_example)
         return {
             "eval_accuracy": accuracy,
             "eval_loss": loss,
-            #'eval_auc': auc,
-            'eval_precision': precision,
-            'eval_recall': recall,
         }
 
-      eval_metrics = metric_fn(label_ids, predictions)
-      output_spec = tf.estimator.EstimatorSpec(
-          mode=mode,
-          loss=total_loss,
-          eval_metric_ops=eval_metrics
-      )
-      '''
+      eval_metrics = (metric_fn,
+                      [per_example_loss, label_ids, logits, is_real_example])
       output_spec = tf.contrib.tpu.TPUEstimatorSpec(
           mode=mode,
           loss=total_loss,
           eval_metrics=eval_metrics,
           scaffold_fn=scaffold_fn)
-      '''
     else:
-        output_spec = tf.estimator.EstimatorSpec(
-            mode=mode,
-            predictions=predictions
-        )
-
-      #output_spec = tf.contrib.tpu.TPUEstimatorSpec(x
-       #   mode=mode,
-        #  predictions={"probabilities": probabilities},
-         # scaffold_fn=scaffold_fn)
+      output_spec = tf.contrib.tpu.TPUEstimatorSpec(
+          mode=mode,
+          predictions={"probabilities": probabilities},
+          scaffold_fn=scaffold_fn)
     return output_spec
 
   return model_fn
@@ -962,10 +887,13 @@ def main(_):
   tf.logging.set_verbosity(tf.logging.INFO)
 
   processors = {
-
-      "ner":NER_Processor
+      "cola": ColaProcessor,
+      "mnli": MnliProcessor,
+      "mrpc": MrpcProcessor,
+      "xnli": XnliProcessor,
+      "knowledgelabel":KnowledgeLabel_Processor
   }
-  #该方法用于验证checkpoint和config中的参数do_lower_case是否相匹配的方法.
+
   tokenization.validate_case_matches_checkpoint(FLAGS.do_lower_case,
                                                 FLAGS.init_checkpoint)
 
@@ -999,7 +927,7 @@ def main(_):
   if FLAGS.use_tpu and FLAGS.tpu_name:
     tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
         FLAGS.tpu_name, zone=FLAGS.tpu_zone, project=FLAGS.gcp_project)
-  # 如果为PER_HOST_V1或PER_HOST_V2，则在每个主机上调用一次input_fn。 #使用每核心输入管道配置，每个核心调用一次。 具有全局批量大小
+
   is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
   run_config = tf.contrib.tpu.RunConfig(
       cluster=tpu_cluster_resolver,
@@ -1053,15 +981,13 @@ def main(_):
         seq_length=FLAGS.max_seq_length,
         is_training=True,
         drop_remainder=True)
-    '''
+    #estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
     # kelly add
-    tensors_to_log = {"train loss": "loss","train global_steps":"global_steps"}
+    tensors_to_log = {"train loss": "loss/Mean:0"}
     logging_hook = tf.estimator.LoggingTensorHook(
         tensors=tensors_to_log, every_n_iter=1)
-
     estimator.train(input_fn=train_input_fn, hooks=[logging_hook], max_steps=num_train_steps)
-    '''
-    estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
+
   if FLAGS.do_eval:
     eval_examples = processor.get_dev_examples(FLAGS.data_dir)
     num_actual_eval_examples = len(eval_examples)
@@ -1139,51 +1065,28 @@ def main(_):
 
     result = estimator.predict(input_fn=predict_input_fn)
     print("1 predicate_predict.csv is written ")
-    output_predict_file = os.path.join(FLAGS.output_dir, "predicate_predict.txt")
-    _, id2label = getLabel_map(label_list)
-    def result_to_pair(writer):
-        for predict_line, prediction in zip(predict_examples, result):
-            idx = 0
-            line = ''
-            line_token = str(predict_line.text_a).split(' ')
-            label_token = str(predict_line.label).split(' ')
-            len_seq = len(label_token)
-            if len(line_token) != len(label_token):
-                tf.logging.info(predict_line.text_a)
-                tf.logging.info(predict_line.label)
-                break
-            for id in prediction:
-                if idx >= len_seq:
-                    break
-                curr_labels = id2label[id]
-                if curr_labels in ['[CLS]', '[SEP]']:
-                    continue
-                try:
-                    line += line_token[idx] + ' ' + label_token[idx] + ' ' + curr_labels + '\n'
-                except Exception as e:
-                    tf.logging.info(e)
-                    tf.logging.info(predict_line.text_a)
-                    tf.logging.info(predict_line.label)
-                    line = ''
-                    break
-                idx += 1
-            writer.write(line + '\n')
+    output_predict_file = os.path.join(FLAGS.output_dir, "predicate_predict.csv")
+    with tf.gfile.GFile(output_predict_file, "w") as writer:
+      num_written_lines = 0
+      tf.logging.info("***** Predict results *****")
+      for (i, prediction) in enumerate(result):
+        probabilities = prediction["probabilities"]
+        if i >= num_actual_predict_examples:
+          break
+        output_line = "\t".join(
+            str(class_probability)
+            for class_probability in probabilities) + "\n"
 
-    with   codecs.open(output_predict_file, 'w', encoding='utf-8') as writer:
-        result_to_pair(writer)
-    from utils.conlleval import return_report
-
-    eval_result = return_report(output_predict_file)
-    print(''.join(eval_result))
-    # 写结果到文件中
-    with  codecs.open(os.path.join(FLAGS.output_dir, 'predict_score.txt'), 'a', encoding='utf-8') as fd:
-        fd.write(''.join(eval_result))
+        writer.write(output_line)
+        num_written_lines += 1
+    print("2 predicate_predict.csv is written ")
+    assert num_written_lines == num_actual_predict_examples
+    print("predicate_predict.csv is written ")
 
 
 if __name__ == "__main__":
   import setproctitle
   setproctitle.setproctitle('kelly')
-
   flags.mark_flag_as_required("data_dir")
   flags.mark_flag_as_required("task_name")
   flags.mark_flag_as_required("vocab_file")

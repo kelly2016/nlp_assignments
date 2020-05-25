@@ -74,6 +74,7 @@ def evaluate(iterable, options=None):
     last_guessed_type = ''    # type of previous chunk tag in corpus
 
     for line in iterable:
+        print(line)
         line = line.rstrip('\r\n')
 
         if options.delimiter == ANY_SPACE:
@@ -84,8 +85,8 @@ def evaluate(iterable, options=None):
         if num_features is None:
             num_features = len(features)
         elif num_features != len(features) and len(features) != 0:
-            raise FormatError('unexpected number of features: %d (%d)' %
-                              (len(features), num_features))
+            continue
+            #raise FormatError('unexpected number of features: %d (%d)' % (len(features), num_features))
 
         if len(features) == 0 or features[0] == options.boundary:
             features = [options.boundary, 'O', 'O']

@@ -15,6 +15,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score
 from sklearn.metrics import classification_report
+from sklearn.metrics import f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
@@ -102,7 +103,7 @@ class political经济学常识_cleaned.csv : 46
     #return X_train_tfidf_model,y_train,X_test_tfidf_model,y_test
 
 
-def classificationreport(classmethodBame ,y_true , y_pred ,target_names ):
+def classificationreport(classmethodBame ,y_true , y_pred ,labels=None,target_names=None ):
     """
 
     :param y_true:真实数值
@@ -110,9 +111,9 @@ def classificationreport(classmethodBame ,y_true , y_pred ,target_names ):
     :param target_names:类别label
     :return:
     """
-    print('{} accuracy:{}'.format(classmethodBame,accuracy_score(y_true, y_pred)))
-    #print(classification_report(y_true, y_pred, target_names=target_names))
-    print(classification_report(y_true, y_pred))
+    print('{} accuracy:{}  ， f1 = {}'.format(classmethodBame,accuracy_score(y_true, y_pred),f1_score(y_true, y_pred, labels=labels, average='weighted')))
+    print(classification_report(y_true, y_pred, labels=labels,target_names=target_names))
+    #print(classification_report(y_true, y_pred))
 
 class kNN(object):
 

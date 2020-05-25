@@ -10,9 +10,14 @@ import re
 import sys
 
 import numpy as np
+import pandas as pd
 import tensorflow as tf
 
-from model.bert import tokenization
+file = "/Users/henry/Desktop/多模态情绪识别2_标注.csv"
+df = pd.read_csv(file )
+src_df= df['语音编号']
+
+
 
 arraylist= [
             [3, 3, 3, 3],

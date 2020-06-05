@@ -12,69 +12,103 @@ import os
 from collections import OrderedDict
 
 import numpy as np
-from keras.layers import Layer, Dense, Permute
-from keras.models import Model
+from keras.callbacks import ReduceLROnPlateau, EarlyStopping
+from keras.callbacks import TensorBoard
 from tqdm import tqdm
 
 from evaluate import evaluate as src_evaluate
-from model.bert4keras.backend import keras, K
-from model.bert4keras.models import build_transformer_model
-from model.bert4keras.optimizers import Adam
+from model.bert4keras.backend import keras
 from model.bert4keras.snippets import open
 from model.bert4keras.snippets import sequence_padding, DataGenerator
 from model.bert4keras.tokenizers import Tokenizer
+from reading_comprehension import Reading_Comprehension
 
+#from keras.utils import training_utils
 # 基本信息
-maxlen = 512
+maxlen = 128#512
 epochs = 20
 batch_size = 4
 learing_rate = 2e-5
 data_dir='/Users/henry/Documents/application/nlp_assignments/data/rc'
 output_dir='/Users/henry/Documents/application/nlp_assignments/data/rc/output2'
-bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_large_ext_L-24_H-1024_A-16'
+bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_L-12_H-768_A-12'
+    #'/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_large_ext_L-24_H-1024_A-16'
 config_path = f'{bert_dir}/bert_config.json'
 checkpoint_path = f'{bert_dir}/bert_model.ckpt'
 dict_path = f'{bert_dir}/vocab.txt'
 tokenizer = Tokenizer(dict_path, do_lower_case=True)
-
+best_model_file = os.path.join(output_dir,'roberta_best_model.h5')
+#nbr_gpus = len(training_utils._get_available_devices()) - 1
 
 
 def train():
-    model = build_transformer_model(
-        config_path,
-        checkpoint_path,
+
+    model = Reading_Comprehension(config_path,checkpoint_path,best_model_file).getModel()
+    train_data = load_data(
+        # os.path.join(data_dir,'train.json')
+        os.path.join(data_dir, 'demo_train.json')
     )
-
-    output = Dense(2)(model.output)
-    output = MaskedSoftmax()(output)
-    output = Permute((2, 1))(output)
-
-    model = Model(model.input, output)
-    model.summary()
-    model.compile(
-        loss=sparse_categorical_crossentropy,
-        optimizer=Adam(learing_rate),
-        metrics=[sparse_accuracy]
-    )
-
     #数据生成
-    train_generator = data_generator(train_data, batch_size)
+    train_generator = Data_generator(train_data, batch_size)
     #评价函数
-    evaluator = Evaluator()
-
+    evaluator = Evaluator(model,'demo_dev.json')
     model.fit_generator(
         train_generator.forfit(),
         steps_per_epoch=len(train_generator),
         epochs=epochs,
-        callbacks=[evaluator]
+        callbacks=[evaluator],
+        verbose=1,
+        workers=2,
+        use_multiprocessing=True
+    )
+
+
+def train2():
+    model = Reading_Comprehension(config_path, checkpoint_path, best_model_file).getModel()
+
+    train_data = load_data(
+        # os.path.join(data_dir,'train.json')
+        os.path.join(data_dir, 'demo_train.json')
+    )
+    #数据生成
+    train_generator = Data_generator(train_data, batch_size)
+    val_data = load_data(
+        # os.path.join(data_dir,'train.json')
+        os.path.join(data_dir, 'demo_dev.json')
+    )
+    # 验证集数据生成
+    val_generator = Data_generator(val_data, batch_size)
+    #评价函数
+    evaluator = Evaluator()
+
+    reduce_lr = ReduceLROnPlateau(monitor=model.sparse_accuracy, factor=0.5, patience=10, verbose=1,
+                                  min_lr=0.0001 )
+    early_stop = EarlyStopping(monitor=model.sparse_accuracy, patience=50 , verbose=1, min_delta=0.001)
+
+    callbacks = [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir='./tb_log')]
+
+    model.fit_generator(
+        train_generator.forfit(),
+        steps_per_epoch=len(train_generator),
+        validation_data=val_generator.forfit(),
+        validation_steps=len(val_generator),
+        epochs=epochs,
+        callbacks=callbacks,
+        verbose=1,
+        max_queue_size=128,
+        workers=2,
+        use_multiprocessing=True
     )
 
 def test():
     predict_to_file(os.path.join(data_dir, 'test1.json'), os.path.join(output_dir, 'pred1.json'))
 
+'''
+
+
 class MaskedSoftmax(Layer):
     """
-    在序列长度那一维进行softmax，并mask掉padding部分
+    #在序列长度那一维进行softmax，并mask掉padding部分
     """
     def compute_mask(self, inputs, mask=None):
         return None
@@ -85,8 +119,8 @@ class MaskedSoftmax(Layer):
             mask = K.expand_dims(mask, 2)
             inputs = inputs - (1.0 - mask) * 1e12#？如果mask是1，inputs不变是需要计算的，如果mask是0，inputs将变成一个很大的负数，在之后的softmax中配合指数函数这一项就会为0
         return K.softmax(inputs, 1)
-
-class data_generator(DataGenerator):
+'''
+class Data_generator(DataGenerator):
     """
     数据生成器
     """
@@ -111,6 +145,7 @@ class data_generator(DataGenerator):
                     batch_labels = sequence_padding(batch_labels)
                     yield [batch_token_ids, batch_segment_ids], batch_labels
                     batch_token_ids, batch_segment_ids, batch_labels = [], [], []
+"""
 
 def sparse_categorical_crossentropy(y_true, y_pred):
     # y_true需要重新明确一下shape和dtype
@@ -128,7 +163,7 @@ def sparse_accuracy(y_true, y_pred):
     # 计算准确率
     y_pred = K.cast(K.argmax(y_pred, axis=2), 'int32')
     return K.mean(K.cast(K.equal(y_true, y_pred), K.floatx()))
-
+"""
 def search(pattern, sequence):
     """从sequence中寻找子串pattern
     如果找到，返回第一个下标；否则返回-1。
@@ -149,13 +184,13 @@ def load_data(filename):
             ])
     return D
 
-def predict_to_file(infile, out_file):
+def predict_to_file(infile, out_file,model):
     """预测结果到文件，方便提交
     """
     fw = open(out_file, 'w', encoding='utf-8')
     R = {}
     for d in tqdm(load_data(infile)):
-        a = extract_answer(d[2], d[1])
+        a = extract_answer(d[2], d[1],model=model)
         R[d[0]] = a
     R = json.dumps(R, ensure_ascii=False, indent=4)
     fw.write(R)
@@ -191,15 +226,16 @@ class Evaluator(keras.callbacks.Callback):
     """
     评估和保存模型
     """
-    def __init__(self,model):
-        self.best_val_f1 = 0.
+    def __init__(self,model,val_dilename):
+        self.best_val_f1 = 6.0
         self.model = model
+        self.val_dilename = val_dilename
 
     def evaluate(self, filename):
         """
         评测函数（官方提供评测脚本evaluate.py）
         """
-        predict_to_file(filename, filename + '.pred.json')
+        predict_to_file(filename, filename + '.pred.json',self.model)
         ref_ans = json.load(io.open(filename))
         pred_ans = json.load(io.open(filename + '.pred.json'))
         F1, EM, TOTAL, SKIP = src_evaluate(ref_ans, pred_ans)
@@ -212,18 +248,15 @@ class Evaluator(keras.callbacks.Callback):
 
     def on_epoch_end(self, epoch, logs=None):
         metrics = self.evaluate(
-            os.path.join(data_dir,'dev.json')
+            os.path.join(data_dir,self.val_dilename)
             # os.path.join(data_dir,'demo_dev.json')
         )
         if float(metrics['F1']) >= self.best_val_f1:
             self.best_val_f1 = float(metrics['F1'])
-            self.model.save_weights(os.path.join(output_dir,'roberta_best_model.weights'))
-            self.model.save(os.path.join(output_dir,'roberta_best_model.h5'))
+            self.model.save_weights(best_model_file)
+            #self.model.save(os.path.join(output_dir,'roberta_best_model.h5'))
         metrics['BEST_F1'] = self.best_val_f1
         print(metrics)
 
 if __name__ == '__main__':
-    train_data = load_data(
-        # os.path.join(data_dir,'train.json')
-        os.path.join(data_dir, 'demo_train.json')
-    )
+   pass

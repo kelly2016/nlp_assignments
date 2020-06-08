@@ -28,12 +28,13 @@ from reading_comprehension import Reading_Comprehension
 # 基本信息
 maxlen = 512#128
 epochs = 20
-batch_size = 32
+batch_size = 1
 learing_rate = 2e-5
 data_dir='/Users/henry/Documents/application/nlp_assignments/data/rc'
 output_dir='/Users/henry/Documents/application/nlp_assignments/data/rc/output2'
-bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_L-12_H-768_A-12'
-    #'/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_large_ext_L-24_H-1024_A-16'
+bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_large_ext_L-24_H-1024_A-16'
+#'/Users/henry/Documents/application/multi-label-bert/data/chinese_L-12_H-768_A-12'
+    #
 config_path = f'{bert_dir}/bert_config.json'
 checkpoint_path = f'{bert_dir}/bert_model.ckpt'
 dict_path = f'{bert_dir}/vocab.txt'
@@ -82,21 +83,21 @@ def train2():
     #评价函数
     evaluator = Evaluator()
 
-    reduce_lr = ReduceLROnPlateau(monitor=model.sparse_accuracy, factor=0.5, patience=10, verbose=1,
+    reduce_lr = ReduceLROnPlateau(monitor=model.sparse_accuracy, factor=0.5, patience=1, verbose=1,
                                   min_lr=0.0001 )
-    early_stop = EarlyStopping(monitor=model.sparse_accuracy, patience=50 , verbose=1, min_delta=0.001)
+    early_stop = EarlyStopping(monitor=model.sparse_accuracy, patience=1 , verbose=1, min_delta=0.001)#多少轮不变patience
     #tensorboard --logdir /Users/henry/Documents/application/zhitu2/branches/test/logs --port=6001
     callbacks = [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir=os.path.join(data_dir, 'tb_log') )]
 
     model.fit_generator(
         train_generator.forfit(),
         steps_per_epoch=len(train_generator),
-        validation_data=val_generator.forfit(),
-        validation_steps=len(val_generator),
+        #validation_data=val_generator.forfit(),
+        #validation_steps=len(val_generator),
         epochs=epochs,
         callbacks=callbacks,
         verbose=1,
-        max_queue_size=128,
+        max_queue_size=10,
         workers=cores,
         use_multiprocessing=True
     )

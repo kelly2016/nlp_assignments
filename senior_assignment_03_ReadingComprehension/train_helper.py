@@ -26,15 +26,15 @@ from reading_comprehension import Reading_Comprehension
 
 #from keras.utils import training_utils
 # 基本信息
-maxlen = 512#128
+maxlen = 512#128#
 epochs = 20
-batch_size = 1
+batch_size = 32
 learing_rate = 2e-5
 data_dir='/Users/henry/Documents/application/nlp_assignments/data/rc'
 output_dir='/Users/henry/Documents/application/nlp_assignments/data/rc/output2'
-bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_large_ext_L-24_H-1024_A-16'
-#'/Users/henry/Documents/application/multi-label-bert/data/chinese_L-12_H-768_A-12'
-    #
+bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_L-12_H-768_A-12'
+#'/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_large_ext_L-24_H-1024_A-16'
+
 config_path = f'{bert_dir}/bert_config.json'
 checkpoint_path = f'{bert_dir}/bert_model.ckpt'
 dict_path = f'{bert_dir}/vocab.txt'
@@ -52,13 +52,19 @@ def train():
     )
     #数据生成
     train_generator = Data_generator(train_data, batch_size)
+
     #评价函数
     evaluator = Evaluator(model,'demo_dev.json')
+    reduce_lr = ReduceLROnPlateau(factor=0.5, patience=1, verbose=1,
+                                  min_lr=0.0001)  # monitor='val_sparse_accuracy'
+    early_stop = EarlyStopping( patience=1, verbose=1,
+                               min_delta=0.001)  # 多少轮不变patience#monitor='val_sparse_accuracy'
+
     model.fit_generator(
         train_generator.forfit(),
         steps_per_epoch=len(train_generator),
         epochs=epochs,
-        callbacks=[evaluator],
+        callbacks=[evaluator,reduce_lr,early_stop],
         verbose=1,
         workers=cores,
         use_multiprocessing=True
@@ -66,7 +72,8 @@ def train():
 
 
 def train2():
-    model = Reading_Comprehension(config_path, checkpoint_path, best_model_file).getModel()
+    fine_tune = os.path.isfile(best_model_file)
+    model = Reading_Comprehension(config_path, checkpoint_path, best_model_file, fine_tune=fine_tune).getModel()
 
     train_data = load_data(
         # os.path.join(data_dir,'train.json')
@@ -81,19 +88,19 @@ def train2():
     # 验证集数据生成
     val_generator = Data_generator(val_data, batch_size)
     #评价函数
-    evaluator = Evaluator()
+    evaluator = Evaluator(model,'demo_dev.json')
 
-    reduce_lr = ReduceLROnPlateau(monitor=model.sparse_accuracy, factor=0.5, patience=1, verbose=1,
-                                  min_lr=0.0001 )
-    early_stop = EarlyStopping(monitor=model.sparse_accuracy, patience=1 , verbose=1, min_delta=0.001)#多少轮不变patience
+    reduce_lr = ReduceLROnPlateau( monitor='F1',factor=0.5, patience=1, verbose=1,
+                                  min_lr=0.0001 )#monitor='val_sparse_accuracy'
+    early_stop = EarlyStopping(monitor='F1',patience=1 , verbose=1, min_delta=0.001)#多少轮不变patience#monitor='val_sparse_accuracy'
     #tensorboard --logdir /Users/henry/Documents/application/zhitu2/branches/test/logs --port=6001
-    callbacks = [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir=os.path.join(data_dir, 'tb_log') )]
+    callbacks = [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir=os.path.join(data_dir, 'tb_log') )] # include evaluator before EarlyStopping reduce_lr!
 
     model.fit_generator(
         train_generator.forfit(),
         steps_per_epoch=len(train_generator),
         #validation_data=val_generator.forfit(),
-        #validation_steps=len(val_generator),
+        validation_steps=len(val_generator),
         epochs=epochs,
         callbacks=callbacks,
         verbose=1,
@@ -214,6 +221,11 @@ class Evaluator(keras.callbacks.Callback):
         output_result['SKIP'] = SKIP
         return output_result
 
+    ''''''
+    def on_train_begin(self, logs={}):
+        if not ('F1' in self.params['metrics']):
+            self.params['metrics'].append('F1')
+
     def on_epoch_end(self, epoch, logs=None):
         metrics = self.evaluate(
             os.path.join(data_dir,self.val_dilename)
@@ -224,7 +236,9 @@ class Evaluator(keras.callbacks.Callback):
             #self.model.save_weights(best_model_file)
             self.model.save(best_model_file)
         metrics['BEST_F1'] = self.best_val_f1
+        logs['F1'] = float(metrics['F1'])
         print(metrics)
 
 if __name__ == '__main__':
     train()
+    #train2()

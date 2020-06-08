@@ -14,7 +14,7 @@ from model.bert4keras.optimizers import Adam
 
 
 class Reading_Comprehension(object):
-    def __init__(self,config_path,checkpoint_path,best_model_file ,learing_rate= 2e-5):
+    def __init__(self,config_path,checkpoint_path,best_model_file ,learing_rate= 2e-5,fine_tune=False):
         self.model = build_transformer_model(
             config_path,
             checkpoint_path,
@@ -22,11 +22,13 @@ class Reading_Comprehension(object):
 
         output = Dense(2)(self.model.output)
         output = MaskedSoftmax()(output)
-        output = Permute((2, 1))(output)  # permute函数仅切换轴的位置，dims参数告诉Keras您希望最终位置如何
-
+        # 因为在给出的predlabel 结构为labels = [[start_index], [start_index + len(a_token_ids) - 1]],permute函数仅切换轴的位置，dims参数告诉Keras您希望最终位置如何,将输入的维度按照给定模式进行重排
+        #将结构[batchsize,maxsize,2] -> [batchsize,2,maxsize]
+        output = Permute((2, 1))(output)
         self.model = Model(self.model.input, output)
         self.best_model_file  = best_model_file
-        self.model.load_weights(best_model_file)
+        if fine_tune:
+            self.model.load_weights(best_model_file)
         self.model.summary()
         self.model.compile(
             loss=self.sparse_categorical_crossentropy,

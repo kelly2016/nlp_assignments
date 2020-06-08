@@ -158,11 +158,11 @@ def calc_f1_score(answers, prediction):
         if lcs_len == 0:
             f1_scores.append(0)
             continue
-        prec = 1.0*lcs_len/len(prediction_segs)
-        rec = 1.0*lcs_len/len(ans_segs)
+        prec = 1.0*lcs_len/len(prediction_segs)#  预测答案和正确答案质检的最大子串长度／预测出的答案词语长度
+        rec = 1.0*lcs_len/len(ans_segs)#  预测答案和正确答案质检的最大子串长度／正确答案词语长度
         f1 = (2 * prec * rec) / (prec + rec)
         f1_scores.append(f1)
-    return max(f1_scores)
+    return max(f1_scores) #返回多个答案中最大的值
 
 
 def calc_em_score(answers, prediction):

@@ -8,6 +8,7 @@
 
 import io
 import json
+import multiprocessing
 import os
 from collections import OrderedDict
 
@@ -27,7 +28,7 @@ from reading_comprehension import Reading_Comprehension
 # 基本信息
 maxlen = 128#512
 epochs = 20
-batch_size = 4
+batch_size = 32
 learing_rate = 2e-5
 data_dir='/Users/henry/Documents/application/nlp_assignments/data/rc'
 output_dir='/Users/henry/Documents/application/nlp_assignments/data/rc/output2'
@@ -39,11 +40,11 @@ dict_path = f'{bert_dir}/vocab.txt'
 tokenizer = Tokenizer(dict_path, do_lower_case=True)
 best_model_file = os.path.join(output_dir,'roberta_best_model.h5')
 #nbr_gpus = len(training_utils._get_available_devices()) - 1
-
+cores = multiprocessing.cpu_count()-1
 
 def train():
-
-    model = Reading_Comprehension(config_path,checkpoint_path,best_model_file).getModel()
+    fine_tune = os.path.isfile(best_model_file)
+    model = Reading_Comprehension(config_path,checkpoint_path,best_model_file,fine_tune=fine_tune).getModel()
     train_data = load_data(
         # os.path.join(data_dir,'train.json')
         os.path.join(data_dir, 'demo_train.json')
@@ -58,7 +59,7 @@ def train():
         epochs=epochs,
         callbacks=[evaluator],
         verbose=1,
-        workers=2,
+        workers=cores,
         use_multiprocessing=True
     )
 
@@ -84,8 +85,8 @@ def train2():
     reduce_lr = ReduceLROnPlateau(monitor=model.sparse_accuracy, factor=0.5, patience=10, verbose=1,
                                   min_lr=0.0001 )
     early_stop = EarlyStopping(monitor=model.sparse_accuracy, patience=50 , verbose=1, min_delta=0.001)
-
-    callbacks = [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir='./tb_log')]
+    #tensorboard --logdir /Users/henry/Documents/application/zhitu2/branches/test/logs --port=6001
+    callbacks = [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir=os.path.join(data_dir, 'tb_log') )]
 
     model.fit_generator(
         train_generator.forfit(),
@@ -96,7 +97,7 @@ def train2():
         callbacks=callbacks,
         verbose=1,
         max_queue_size=128,
-        workers=2,
+        workers=cores,
         use_multiprocessing=True
     )
 
@@ -209,13 +210,13 @@ def extract_answer(question, context,model, max_a_len=16):
     segment_ids = [0] * len(q_token_ids) + [1] * (len(c_token_ids) - 1)
     c_tokens = tokenizer.tokenize(context)[1:-1]
     mapping = tokenizer.rematch(context, c_tokens)
-    probas = model.predict([[token_ids], [segment_ids]])[0]
+    probas = model.predict([[token_ids], [segment_ids]])[0] #返回的是 每一个位置成为stat和end的可能性
     probas = probas[:, len(q_token_ids):-1]
     start_end, score = None, -1
     for start, p_start in enumerate(probas[0]):
         for end, p_end in enumerate(probas[1]):
             if end >= start and end < start + max_a_len:
-                if p_start * p_end > score:
+                if p_start * p_end > score: #通过start和end的联合score来判断组合
                     start_end = (start, end)
                     score = p_start * p_end
     start, end = start_end
@@ -227,7 +228,7 @@ class Evaluator(keras.callbacks.Callback):
     评估和保存模型
     """
     def __init__(self,model,val_dilename):
-        self.best_val_f1 = 6.0
+        self.best_val_f1 = 0.
         self.model = model
         self.val_dilename = val_dilename
 
@@ -253,10 +254,10 @@ class Evaluator(keras.callbacks.Callback):
         )
         if float(metrics['F1']) >= self.best_val_f1:
             self.best_val_f1 = float(metrics['F1'])
-            self.model.save_weights(best_model_file)
-            #self.model.save(os.path.join(output_dir,'roberta_best_model.h5'))
+            #self.model.save_weights(best_model_file)
+            self.model.save(best_model_file)
         metrics['BEST_F1'] = self.best_val_f1
         print(metrics)
 
 if __name__ == '__main__':
-   pass
+    train()

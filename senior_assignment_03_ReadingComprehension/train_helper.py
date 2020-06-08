@@ -26,7 +26,7 @@ from reading_comprehension import Reading_Comprehension
 
 #from keras.utils import training_utils
 # 基本信息
-maxlen = 128#512
+maxlen = 512#128
 epochs = 20
 batch_size = 32
 learing_rate = 2e-5

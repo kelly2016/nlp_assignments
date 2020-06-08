@@ -104,23 +104,7 @@ def train2():
 def test():
     predict_to_file(os.path.join(data_dir, 'test1.json'), os.path.join(output_dir, 'pred1.json'))
 
-'''
 
-
-class MaskedSoftmax(Layer):
-    """
-    #在序列长度那一维进行softmax，并mask掉padding部分
-    """
-    def compute_mask(self, inputs, mask=None):
-        return None
-
-    def call(self, inputs, mask=None):
-        if mask is not None:
-            mask = K.cast(mask, K.floatx())
-            mask = K.expand_dims(mask, 2)
-            inputs = inputs - (1.0 - mask) * 1e12#？如果mask是1，inputs不变是需要计算的，如果mask是0，inputs将变成一个很大的负数，在之后的softmax中配合指数函数这一项就会为0
-        return K.softmax(inputs, 1)
-'''
 class Data_generator(DataGenerator):
     """
     数据生成器
@@ -146,25 +130,7 @@ class Data_generator(DataGenerator):
                     batch_labels = sequence_padding(batch_labels)
                     yield [batch_token_ids, batch_segment_ids], batch_labels
                     batch_token_ids, batch_segment_ids, batch_labels = [], [], []
-"""
 
-def sparse_categorical_crossentropy(y_true, y_pred):
-    # y_true需要重新明确一下shape和dtype
-    y_true = K.reshape(y_true, K.shape(y_pred)[:-1])
-    y_true = K.cast(y_true, 'int32')
-    y_true = K.one_hot(y_true, K.shape(y_pred)[2])
-    # 计算交叉熵
-    return K.mean(K.categorical_crossentropy(y_true, y_pred))
-
-
-def sparse_accuracy(y_true, y_pred):
-    # y_true需要重新明确一下shape和dtype
-    y_true = K.reshape(y_true, K.shape(y_pred)[:-1])
-    y_true = K.cast(y_true, 'int32')
-    # 计算准确率
-    y_pred = K.cast(K.argmax(y_pred, axis=2), 'int32')
-    return K.mean(K.cast(K.equal(y_true, y_pred), K.floatx()))
-"""
 def search(pattern, sequence):
     """从sequence中寻找子串pattern
     如果找到，返回第一个下标；否则返回-1。

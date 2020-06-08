@@ -146,7 +146,7 @@ def evaluate(ref_ans, pred_ans, verbose=False):
 
     f1_score = 100.0 * f1 / total_count
     em_score = 100.0 * em / total_count
-    return f1_score, em_score, total_count, skip_count
+    return f1_score, em_score, total_count, skip_count#skip_count出现异常跳过的问题数目
 
 
 def calc_f1_score(answers, prediction):

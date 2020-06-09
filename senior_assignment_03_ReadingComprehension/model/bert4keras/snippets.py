@@ -238,6 +238,7 @@ class DataGenerator(object):
             self.steps = None
         self.buffer_size = buffer_size or batch_size * 1000
 
+
     def __len__(self):
         return self.steps
 

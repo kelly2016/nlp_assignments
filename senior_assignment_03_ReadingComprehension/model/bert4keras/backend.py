@@ -19,9 +19,12 @@ if is_tf_keras:
     import tensorflow.keras as keras
     import tensorflow.keras.backend as K
     sys.modules['keras'] = keras
+
 else:
     import keras
     import keras.backend as K
+
+
 
 # 判断是否启用重计算（通过时间换空间）
 do_recompute = strtobool(os.environ.get('RECOMPUTE', '0'))

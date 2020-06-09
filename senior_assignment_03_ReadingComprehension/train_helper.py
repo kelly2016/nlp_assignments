@@ -26,7 +26,7 @@ from reading_comprehension import Reading_Comprehension
 
 #from keras.utils import training_utils
 # 基本信息
-maxlen = 512#128#
+maxlen = 128#512#
 epochs = 20
 batch_size = 32
 learing_rate = 2e-5
@@ -51,17 +51,17 @@ def train():
         os.path.join(data_dir, 'demo_train.json')
     )
     #数据生成
-    train_generator = Data_generator(train_data, batch_size)
+    train_generator = SequenceData(train_data, batch_size)#Data_generator(train_data, batch_size)
 
     #评价函数
     evaluator = Evaluator(model,'demo_dev.json')
-    reduce_lr = ReduceLROnPlateau(factor=0.5, patience=1, verbose=1,
-                                  min_lr=0.0001)  # monitor='val_sparse_accuracy'
-    early_stop = EarlyStopping( patience=1, verbose=1,
-                               min_delta=0.001)  # 多少轮不变patience#monitor='val_sparse_accuracy'
+    reduce_lr = ReduceLROnPlateau(monitor='val_sparse_accuracy',factor=0.5, patience=10, verbose=1,
+                                  min_lr=0.0001)  #
+    early_stop = EarlyStopping( monitor='val_sparse_accuracy',patience=10, verbose=1,
+                               min_delta=0.001)  # 多少轮不变patience#
 
     model.fit_generator(
-        train_generator.forfit(),
+        train_generator,#train_generator.forfit(),
         steps_per_epoch=len(train_generator),
         epochs=epochs,
         callbacks=[evaluator,reduce_lr,early_stop],
@@ -103,17 +103,69 @@ def train2():
         validation_steps=len(val_generator),
         epochs=epochs,
         callbacks=callbacks,
-        verbose=1,
-        max_queue_size=10,
-        workers=cores,
-        use_multiprocessing=True
+        verbose=1
     )
 
 def test():
     predict_to_file(os.path.join(data_dir, 'test1.json'), os.path.join(output_dir, 'pred1.json'))
 
+class SequenceData(keras.utils.Sequence):
+    """
+    用于model.fit_generator， workers=cores,
+        use_multiprocessing=True
+        多进程的时候使用
+    """
+
+    def __init__(self, data, batch_size=32, buffer_size=None,random=True,is_end=True):
+        self.data = data
+        self.batch_size = batch_size
+        self.random = random
+        self.is_end = is_end
+        if self.random:
+            np.random.shuffle(self.data)
+
+        if hasattr(self.data, '__len__'):
+            self.steps = len(self.data) // self.batch_size
+            if len(self.data) % self.batch_size != 0:
+                self.steps += 1
+        else:
+            self.steps = None
+        self.buffer_size = buffer_size or batch_size * 1000
+
+    def __len__(self):
+        return self.steps
+
+
+
+
+    def __getitem__(self, idx):
+        print('--------',idx)
+        # 迭代器部分
+        batch_token_ids, batch_segment_ids, batch_labels = [], [], []
+        for index in range(idx * self.batch_size, (idx + 1) * self.batch_size):
+            item = self.data[index]
+            context, question, answers = item[1:]
+            token_ids, segment_ids = tokenizer.encode(
+                question, context, max_length=maxlen
+            )
+            a = np.random.choice(answers)
+            a_token_ids = tokenizer.encode(a)[0][1:-1]
+            start_index = search(a_token_ids, token_ids)
+            if start_index != -1:
+                labels = [[start_index], [start_index + len(a_token_ids) - 1]]
+                batch_token_ids.append(token_ids)
+                batch_segment_ids.append(segment_ids)
+                batch_labels.append(labels)
+                if len(batch_token_ids) == self.batch_size or self.is_end:
+                    batch_token_ids = sequence_padding(batch_token_ids)
+                    batch_segment_ids = sequence_padding(batch_segment_ids)
+                    batch_labels = sequence_padding(batch_labels)
+                    return [batch_token_ids, batch_segment_ids], batch_labels
+
+
 
 class Data_generator(DataGenerator):
+
     """
     数据生成器
     """
@@ -240,5 +292,5 @@ class Evaluator(keras.callbacks.Callback):
         print(metrics)
 
 if __name__ == '__main__':
-    train()
-    #train2()
+    #train()
+    train2()

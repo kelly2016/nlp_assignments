@@ -33,7 +33,7 @@ class Reading_Comprehension(object):
         if is_gpu is True:
             if self.nbr_gpus <=0:
                 self.nbr_gpus = len(_get_available_gpus()) - 1
-            if self.nbr_gpus <= 0:
+            if self.nbr_gpus > 0:
                 self.model = multi_gpu_model(self.model, gpus=self.nbr_gpus)
             print('{} 个GPU被使用'.format(self.nbr_gpus))
 

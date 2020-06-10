@@ -13,16 +13,15 @@ import os
 from collections import OrderedDict
 
 import numpy as np
+from evaluate import evaluate as src_evaluate
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 from keras.callbacks import TensorBoard
-from tqdm import tqdm
-
-from evaluate import evaluate as src_evaluate
 from model.bert4keras.backend import keras
 from model.bert4keras.snippets import open
 from model.bert4keras.snippets import sequence_padding, DataGenerator
 from model.bert4keras.tokenizers import Tokenizer
 from reading_comprehension import Reading_Comprehension
+from tqdm import tqdm
 
 #from keras.utils import training_utils
 # 基本信息
@@ -32,7 +31,7 @@ batch_size = 32
 learing_rate = 2e-5
 data_dir='/Users/henry/Documents/application/nlp_assignments/data/rc'
 output_dir='/Users/henry/Documents/application/nlp_assignments/data/rc/output2'
-bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_L-12_H-768_A-12'
+bert_dir = '/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_ext_L-12_H-768_A-12'#chinese_L-12_H-768_A-12
 #'/Users/henry/Documents/application/multi-label-bert/data/chinese_roberta_wwm_large_ext_L-24_H-1024_A-16'
 
 config_path = f'{bert_dir}/bert_config.json'
@@ -42,7 +41,8 @@ tokenizer = Tokenizer(dict_path, do_lower_case=True)
 best_model_file = os.path.join(output_dir,'roberta_best_model.h5')
 #nbr_gpus = len(training_utils._get_available_devices()) - 1
 cores = multiprocessing.cpu_count()-1
-
+#os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+#os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 def train():
     fine_tune = os.path.isfile(best_model_file)
     model = Reading_Comprehension(config_path,checkpoint_path,best_model_file,fine_tune=fine_tune).getModel()
@@ -51,22 +51,22 @@ def train():
         os.path.join(data_dir, 'demo_train.json')
     )
     #数据生成
-    train_generator = SequenceData(train_data, batch_size)#Data_generator(train_data, batch_size)
+    train_generator = Data_generator(train_data, batch_size)#SequenceData(train_data, batch_size)#
 
     #评价函数
     evaluator = Evaluator(model,'demo_dev.json')
-    reduce_lr = ReduceLROnPlateau(monitor='val_sparse_accuracy',factor=0.5, patience=10, verbose=1,
+    reduce_lr = ReduceLROnPlateau(monitor='EM',factor=0.5, patience=10, verbose=1,
                                   min_lr=0.0001)  #
-    early_stop = EarlyStopping( monitor='val_sparse_accuracy',patience=10, verbose=1,
+    early_stop = EarlyStopping( monitor='EM',patience=10, verbose=1,
                                min_delta=0.001)  # 多少轮不变patience#
 
     model.fit_generator(
-        train_generator,#train_generator.forfit(),
+        train_generator.forfit(),#train_generator,#
         steps_per_epoch=len(train_generator),
         epochs=epochs,
         callbacks=[evaluator,reduce_lr,early_stop],
         verbose=1,
-        workers=cores,
+        workers=min(cores-1,1),
         use_multiprocessing=True
     )
 
@@ -90,20 +90,23 @@ def train2():
     #评价函数
     evaluator = Evaluator(model,'demo_dev.json')
 
-    reduce_lr = ReduceLROnPlateau( monitor='F1',factor=0.5, patience=1, verbose=1,
+    reduce_lr = ReduceLROnPlateau( monitor='val_sparse_accuracy',factor=0.5, patience=1, verbose=1,
                                   min_lr=0.0001 )#monitor='val_sparse_accuracy'
-    early_stop = EarlyStopping(monitor='F1',patience=1 , verbose=1, min_delta=0.001)#多少轮不变patience#monitor='val_sparse_accuracy'
+    early_stop = EarlyStopping(monitor='val_sparse_accuracy',patience=1 , verbose=1, min_delta=0.001)#多少轮不变patience#monitor='val_sparse_accuracy'
     #tensorboard --logdir /Users/henry/Documents/application/zhitu2/branches/test/logs --port=6001
     callbacks = [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir=os.path.join(data_dir, 'tb_log') )] # include evaluator before EarlyStopping reduce_lr!
+    # [ evaluator,reduce_lr, early_stop, TensorBoard(log_dir=os.path.join(data_dir, 'tb_log') )] # include evaluator before EarlyStopping reduce_lr!
 
     model.fit_generator(
         train_generator.forfit(),
         steps_per_epoch=len(train_generator),
-        #validation_data=val_generator.forfit(),
+        validation_data=val_generator.forfit(), #这里设置了才会有val_loss: 4.2217 - val_sparse_accuracy
         validation_steps=len(val_generator),
         epochs=epochs,
         callbacks=callbacks,
-        verbose=1
+        verbose=1,
+        workers = min(cores-1,1),
+        use_multiprocessing = True #这里将会以空间换时间，copy多份数据
     )
 
 def test():
@@ -277,6 +280,8 @@ class Evaluator(keras.callbacks.Callback):
     def on_train_begin(self, logs={}):
         if not ('F1' in self.params['metrics']):
             self.params['metrics'].append('F1')
+        if not ('EM' in self.params['metrics']):
+            self.params['metrics'].append('EM')
 
     def on_epoch_end(self, epoch, logs=None):
         metrics = self.evaluate(
@@ -289,8 +294,9 @@ class Evaluator(keras.callbacks.Callback):
             self.model.save(best_model_file)
         metrics['BEST_F1'] = self.best_val_f1
         logs['F1'] = float(metrics['F1'])
+        logs['EM'] = float(metrics['EM'])
         print(metrics)
 
 if __name__ == '__main__':
-    #train()
-    train2()
+    train()
+    #train2()

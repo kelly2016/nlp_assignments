@@ -13,15 +13,16 @@ import os
 from collections import OrderedDict
 
 import numpy as np
-from evaluate import evaluate as src_evaluate
 from keras.callbacks import ReduceLROnPlateau, EarlyStopping
 from keras.callbacks import TensorBoard
+from tqdm import tqdm
+
+from evaluate import evaluate as src_evaluate
 from model.bert4keras.backend import keras
 from model.bert4keras.snippets import open
 from model.bert4keras.snippets import sequence_padding, DataGenerator
 from model.bert4keras.tokenizers import Tokenizer
 from reading_comprehension import Reading_Comprehension
-from tqdm import tqdm
 
 #from keras.utils import training_utils
 # 基本信息
@@ -66,7 +67,7 @@ def train():
         epochs=epochs,
         callbacks=[evaluator,reduce_lr,early_stop],
         verbose=1,
-        workers=min(cores-1,1),
+        workers=min(abs(cores-1),1),
         use_multiprocessing=True
     )
 
@@ -105,7 +106,7 @@ def train2():
         epochs=epochs,
         callbacks=callbacks,
         verbose=1,
-        workers = min(cores-1,1),
+        workers = min(abs(cores-1),1),
         use_multiprocessing = True #这里将会以空间换时间，copy多份数据
     )
 

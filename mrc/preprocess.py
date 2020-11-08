@@ -71,7 +71,7 @@ def preprocessing(file,dictFile,analyzer):
     for key, value in tokens:
         output.write(key + ' ' + str(value) + "\n")
     output.close()
-    print('write:', file+ "\n")
+    print('write:', str(file)+ "\n")
 
 
 if __name__=='__main__':
@@ -82,7 +82,7 @@ if __name__=='__main__':
     file = [dir+"dev.json",dir+"train.json",dir+"test2.json",dir+"test1.json"]
     dictFile = dir+"/cnDict.txt"
     analyzer = Analyzer(Analyzer.ANALYZERS.Jieba, replaceP=True, useStopwords=True)
-    preprocessing(file,dictFile,analyzer)
+    #preprocessing(file,dictFile,analyzer)
     #SQuAD2
     dir = os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'rc' + os.sep + 'SQuAD' + os.sep

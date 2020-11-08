@@ -45,7 +45,7 @@ def preprocess(file,counter,analyzer):
                 pg = d['paragraphs']
                 for p in pg:
                     token = analyzer.cut2list(p['context'])
-                    #tokens += token
+
 
                     counter.update(token)
 
@@ -62,36 +62,32 @@ def preprocessing(file,dictFile,analyzer):
 
     counter = preprocess(file, Counter(),analyzer)
 
-    for k, v in counter.items():
-        print(k, v)
 
-    sorted(counter.items(), key=lambda x:x[1],reverse=True)
-    for k, v in counter.items():
-        print(k, v)
+    #sorted(counter.items(), key=lambda x:x[1],reverse=True)
+    tokens = counter.most_common()
+    print(len(tokens))
 
     output = open(dictFile, "w+", encoding="utf-8")
-    for key, value in counter.items():
+    for key, value in tokens:
         output.write(key + ' ' + str(value) + "\n")
-        print('write:', (key + ' ' + str(value) + "\n"))
-
     output.close()
-
-
-
-
-
-
-
+    print('write:', file+ "\n")
 
 
 if __name__=='__main__':
     setproctitle.setproctitle('kelly')
     dir = os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'rc' + os.sep + 'dureader' + os.sep
-
-    file = [dir+"demo_dev.json"]
+    #dureader
+    file = [dir+"dev.json",dir+"train.json",dir+"test2.json",dir+"test1.json"]
     dictFile = dir+"/cnDict.txt"
     analyzer = Analyzer(Analyzer.ANALYZERS.Jieba, replaceP=True, useStopwords=True)
     preprocessing(file,dictFile,analyzer)
+    #SQuAD2
+    dir = os.path.dirname(os.path.dirname(
+        os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'rc' + os.sep + 'SQuAD' + os.sep
+    file = [dir + "train-v2.0.json", dir + "dev-v2.0.json", dir + "train-v1.0.json", dir + "dev-v1.0.json"]
+    dictFile = dir + "/cnDict.txt"
+    analyzer = Analyzer(Analyzer.ANALYZERS.nltk, replaceP=True, useStopwords=True)
+    preprocessing(file, dictFile, analyzer)
 
-    preprocessing(dir)

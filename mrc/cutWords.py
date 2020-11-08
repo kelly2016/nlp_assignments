@@ -84,7 +84,7 @@ class Analyzer(object):
 
             if self.useStopwords == True:
                     for word in words:
-                        if word not in stopwords:
+                        if word not in stopwords and len(word.strip())> 0:
                             article_contents += word + " "
             else:
                 article_contents= ' '.join(words)
@@ -117,7 +117,7 @@ class Analyzer(object):
 
             if self.useStopwords == True:
                 for word in words:
-                    if word not in stopwords:
+                    if word not in stopwords and len(word.strip())> 0:
                         tokens.append(word)
             else:
                 tokens += words
@@ -165,5 +165,5 @@ if __name__ == '__main__':
     analyzer = Analyzer(Analyzer.ANALYZERS.nltk, replaceP=True, useStopwords=False,
                         userdict='/Users/henry/Documents/application/nlp_assignments/data/AutoMaster/userDict.txt')
 
-    print(analyzer.cut('Trump <> was ;borning :and raised ? in the New York City, borough .of !Queens  ...and [] received an economics degree from the Wharton School微型货车，金杯西部牛仔，4f18发动机。德尔福电脑。 问题'))
+    print(analyzer.cut2list('Trump <> was ;borning :and raised ? in the New York City, borough .of !Queens  ...and [] received an economics degree from the Wharton School微型货车，金杯西部牛仔，4f18发动机。德尔福电脑。 问题'))
     #print(analyzer.cut2list('启辰D50'))

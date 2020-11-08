@@ -82,12 +82,12 @@ if __name__=='__main__':
     file = [dir+"dev.json",dir+"train.json",dir+"test2.json",dir+"test1.json"]
     dictFile = dir+"/cnDict.txt"
     analyzer = Analyzer(Analyzer.ANALYZERS.Jieba, replaceP=True, useStopwords=True)
-    #preprocessing(file,dictFile,analyzer)
+    preprocessing(file,dictFile,analyzer)
     #SQuAD2
     dir = os.path.dirname(os.path.dirname(
         os.path.abspath(__file__))) + os.sep + 'data' + os.sep + 'rc' + os.sep + 'SQuAD' + os.sep
     file = [dir + "train-v2.0.json", dir + "dev-v2.0.json", dir + "train-v1.0.json", dir + "dev-v1.0.json"]
-    dictFile = dir + "/cnDict.txt"
+    dictFile = dir + "/englishDict.txt"
     analyzer = Analyzer(Analyzer.ANALYZERS.nltk, replaceP=True, useStopwords=True)
     preprocessing(file, dictFile, analyzer)
 
